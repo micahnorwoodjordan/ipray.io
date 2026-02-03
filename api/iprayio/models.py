@@ -3,7 +3,6 @@ from django.db import models
 
 
 class Prayer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     fulfilled_at = models.DateTimeField(null=True, blank=True, help_text="When this prayer has been prayed over")
     text = models.TextField()
