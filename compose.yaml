@@ -29,6 +29,15 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
+  
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: iprayio.ui
+    ports:
+      - 80:3000
+    restart: unless-stopped
 
 volumes:
   mysql_data:
