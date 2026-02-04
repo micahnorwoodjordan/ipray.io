@@ -25,4 +25,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "api/manage.py", "runserver", "0.0.0.0:443"]
+CMD ["python", "api/manage.py", "runserver", "0.0.0.0:80"]
