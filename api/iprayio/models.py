@@ -8,7 +8,7 @@ class Prayer(models.Model):
     user_ip_address = models.GenericIPAddressField(protocol="both", unpack_ipv4=True)
     user_email = models.EmailField(null=True, blank=True)
     next_allowed_at = models.DateTimeField(help_text="Earliest time this source may submit another prayer")
-    user_name = models.CharField(null=True, blank=True, max_length=100, help_text="Name of the person submitting the prayer")
+    user_name = models.CharField(default="Anonymous", max_length=100, help_text="Name of the person submitting the prayer")
 
     class Meta:
         indexes = [
