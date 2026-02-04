@@ -1,8 +1,8 @@
 FROM node:20-alpine
 
-WORKDIR /app
-
 COPY server.js .
-COPY public ./public
+COPY . .
+
+EXPOSE 443
 
 CMD ["node", "server.js"]
