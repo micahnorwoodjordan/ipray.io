@@ -5,6 +5,7 @@ import url from "url";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "app", "dist");
+console.log(`NOODLES: ${distPath}`);
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer((req, res) => {
