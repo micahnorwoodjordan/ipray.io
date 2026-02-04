@@ -1,5 +1,7 @@
 .venv/
 artifacts/
+node_modules/
+node_modules/*
 
 *.sqlite3
 *.env

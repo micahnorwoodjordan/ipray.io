@@ -4,11 +4,16 @@ import path from "path";
 import url from "url";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const distPath = path.join(__dirname, "app", "dist");
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer((req, res) => {
   let filePath = req.url === "/" ? "/index.html" : req.url;
-  filePath = path.join(__dirname, "public", filePath);
+  filePath = path.join(distPath, filePath);
+
+  if (req.url === '/favicon.ico') {
+    filePath = path.join(distPath, 'favicon.ico');
+  }
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
@@ -21,14 +26,14 @@ const server = http.createServer((req, res) => {
     const contentType =
       ext === ".html" ? "text/html" :
       ext === ".css" ? "text/css" :
-      ext === ".js" ? "application/javascript" :
-      "text/plain";
+      ext === ".ico" ? "image/x-icon" :
+      ext === ".js" ? "application/javascript" : "text/plain";
 
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Static server running on port ${PORT}`);
 });
