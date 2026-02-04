@@ -82,8 +82,16 @@ export default function App() {
   );
 }
 
+const { width, height } = Dimensions.get('window');
+
 const isWeb = Platform.OS === 'web';
-const HALO_SIZE = isWeb ? 500 : 350;
+const isMobileWeb = isWeb && width < 480;
+
+const HALO_SIZE = isMobileWeb
+  ? width * 0.95       // mobile web
+  : isWeb
+  ? width * 0.3       // desktop web
+  : 400;              // native
 
 const styles = StyleSheet.create({
   root: {
@@ -121,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: HALO_SIZE / 2,
     borderWidth: 2,
     borderColor: 'rgba(229,231,235,0.25)',
-    borderTopColor: '#f97316',
+    borderTopColor: '#219d51',
   },
 
   innerHalo: {
@@ -138,6 +146,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
+    width: "85%"
   },
 
   title: {
