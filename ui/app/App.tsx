@@ -6,24 +6,25 @@ export default function App() {
   const outerSpin = useRef(new Animated.Value(0)).current;
   const innerSpin = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(outerSpin, {
+  const runRotation = (animatedValue: Animated.Value, duration: number) => {
+    Animated.sequence([
+      Animated.timing(animatedValue, {
         toValue: 1,
-        duration: 60000,
+        duration,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
-    ).start();
+      }),
+      Animated.timing(animatedValue, {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: true,
+      }),
+    ]).start(() => runRotation(animatedValue, duration)); // recursive loop
+  };
 
-    Animated.loop(
-      Animated.timing(innerSpin, {
-        toValue: 1,
-        duration: 15000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    ).start();
+  useEffect(() => {
+    runRotation(outerSpin, 30000); // 60s per rotation
+    runRotation(innerSpin, 15000); // 15s per rotation
   }, []);
 
   const outerRotate = outerSpin.interpolate({
