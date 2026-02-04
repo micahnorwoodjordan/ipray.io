@@ -49,6 +49,7 @@ class PrayerCreateView(APIView):
             user_email=email,
             user_ip_address=ip_address,
             next_allowed_at=now() + timedelta(hours=RATE_LIMIT_HOURS),
+            user_name=serializer.validated_data.get('user_name') or 'Anonymous'
         )
 
         # TODO: enqueue notification worker here
