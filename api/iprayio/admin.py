@@ -4,36 +4,28 @@ from .models import Prayer
 
 @admin.register(Prayer)
 class PrayerAdmin(admin.ModelAdmin):
-    # Columns to display in the list view
     list_display = (
-        "id",
-        "created_at",
-        "fulfilled_at",
-        "source_email",
-        "source_ip_address",
-        "next_allowed_at",
+        'id',
+        'created_at',
+        'fulfilled_at',
+        'user_email',
+        'user_ip_address',
+        'next_allowed_at',
     )
 
-    # Filters on the right-hand sidebar
-    list_filter = (
-        "fulfilled_at",
-        "created_at",
-    )
+    list_filter = ('fulfilled_at', 'created_at')
 
-    # Searchable fields
-    search_fields = (
-        "text",
-        "source_email",
-        "source_ip_address",
-    )
+    search_fields = ('text', 'user_email', 'user_ip_address')
 
-    # Fields that are read-only (can't be edited in admin)
     readonly_fields = (
-        "id",
-        "created_at",
-        "source_ip_address",
-        "next_allowed_at",
+        'id',
+        'created_at',
+        'user_ip_address',
+        'next_allowed_at',
+        'text',
+        'user_name',
+        'user_email'
     )
 
     # Default ordering
-    ordering = ("-created_at",)
+    ordering = ('-created_at',)

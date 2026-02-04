@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 from datetime import timedelta
 from django.utils.timezone import now
 from django.conf import settings
@@ -25,9 +23,9 @@ def get_client_ip(request):
 
 def is_rate_limited(ip_address: str, email: str | None):
     """Return True if this IP/email is still within the cooldown window."""
-    qs = Prayer.objects.filter(source_ip_address=ip_address)
+    qs = Prayer.objects.filter(user_ip_address=ip_address)
     if email:
-        qs = qs | Prayer.objects.filter(source_email=email)
+        qs = qs | Prayer.objects.filter(user_email=email)
     latest = qs.order_by("-created_at").first()
     if not latest:
         return False
@@ -41,15 +39,15 @@ class PrayerCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         ip_address = get_client_ip(request)
-        email = serializer.validated_data.get("source_email")
+        email = serializer.validated_data.get("user_email")
 
         if is_rate_limited(ip_address, email):
             return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         prayer = Prayer.objects.create(
             text=serializer.validated_data["text"],
-            source_email=email,
-            source_ip_address=ip_address,
+            user_email=email,
+            user_ip_address=ip_address,
             next_allowed_at=now() + timedelta(hours=RATE_LIMIT_HOURS),
         )
 
