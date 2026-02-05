@@ -29,7 +29,7 @@ export default function App() {
         <View style={styles.content}>
         <Halo onPress={() => setStep('name')}>
           {step === 'landing' && (
-            <Text style={{ color: '#e5e7eb', fontSize: 20, fontWeight: 'bold' }}>
+            <Text style={{ color: '#e5e7eb', fontSize: 40, letterSpacing: 7 }}>
               Begin
             </Text>
           )}
