@@ -5,16 +5,12 @@ from .models import Prayer
 class PrayerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prayer
-        fields = ["text", "content_hash", 'user_name']
+        fields = ["text", 'user_name']
         extra_kwargs = {
             "text": {
                 "required": True,
                 "allow_blank": False,
                 "max_length": 2000
-            },
-            "content_hash": {
-                "required": True,
-                "allow_blank": False
             },
             'user_name': {
                 "required": False,

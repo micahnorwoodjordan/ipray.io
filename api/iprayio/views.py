@@ -1,3 +1,4 @@
+import hashlib
 from datetime import timedelta
 from django.utils.timezone import now
 from django.conf import settings
@@ -36,13 +37,14 @@ class PrayerCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         ip_address = get_client_ip(request)
-        content_hash = serializer.validated_data.get("content_hash")
+        text = serializer.validated_data["text"]
+        content_hash = hashlib.sha256(" ".join(text.split()).encode("utf-8")).hexdigest()
 
         if is_rate_limited(ip_address, content_hash):
             return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         prayer = Prayer.objects.create(
-            text=serializer.validated_data["text"],
+            text=text,
             content_hash=content_hash,
             user_ip_address=ip_address,
             next_allowed_at=now() + timedelta(minutes=RATE_LIMIT_MINUTES),

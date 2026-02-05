@@ -90,17 +90,17 @@ class Command(BaseCommand):
                 return None
 
             notification_service = NotificationService()
-            email_summary = notification_service.notify_admin(NotificationMethod.EMAIL, prayer)
-            sms_summary = notification_service.notify_admin(NotificationMethod.SMS, prayer)
+            methods = (NotificationMethod.EMAIL, NotificationMethod.SMS)
+            summary = notification_service.notify_admin(methods, prayer)
 
             prayer.prayer_status = Prayer.Status.RECEIVED
             prayer.processing_started_at = timezone.now()
             prayer.processing_by = WORKER_ID
             prayer.attempt_count += 1
-            prayer.email_sent = email_summary.email_sent
-            prayer.email_error = email_summary.error
-            prayer.sms_sent = sms_summary.sms_sent
-            prayer.sms_error = sms_summary.error
+            prayer.email_sent = summary.email_sent
+            prayer.email_error = summary.email_error
+            prayer.sms_sent = summary.sms_sent
+            prayer.sms_error = summary.sms_error
 
             prayer.save(
                 update_fields=[
@@ -108,6 +108,10 @@ class Command(BaseCommand):
                     "processing_started_at",
                     "processing_by",
                     "attempt_count",
+                    'email_sent',
+                    'email_error',
+                    'sms_sent',
+                    'sms_error'
                 ]
             )
 
