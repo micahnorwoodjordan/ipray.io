@@ -1,17 +1,30 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, Button, StyleSheet, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import Halo from './components/Halo';
-// import LandingStep from './components/steps/LandingStep';
-// import NameStep from './components/steps/NameStep';
-// import PrayerStep from './components/steps/PrayerStep';
-// import SubmittedStep from './components/steps/SubmittedStep';
+import LandingStep from './components/steps/LandingStep';
+import NameStep from './components/steps/NameStep';
+import PrayerStep from './components/steps/PrayerStep';
+import SubmittedStep from './components/steps/SubmittedStep';
 
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
   const [userName, setUserName] = useState<string>('');
+
+  const haloOpacity = useRef(new Animated.Value(1)).current;
+
+  const fadeOutHalo = (callback?: () => void) => {
+    Animated.timing(haloOpacity, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      if (callback) callback();
+      haloOpacity.setValue(1); // reset for next time
+    });
+  };
 
   useEffect(() => {
     if (step === 'submitted') {
@@ -20,6 +33,14 @@ export default function App() {
     }
   }, [step]);
 
+  const goToNextStep = (nextStep: typeof step) => {
+    if (step === 'landing') {
+      fadeOutHalo(() => setStep(nextStep));
+    } else {
+      setStep(nextStep);
+    }
+  };
+
 
   return (
     <View style={styles.root}>
@@ -27,15 +48,18 @@ export default function App() {
       
       <View style={styles.topSection}>
         <View style={styles.content}>
-        <Halo onPress={() => setStep('name')}>
-          {step === 'landing' && (
-            <Text style={{ color: '#e5e7eb', fontSize: 40, letterSpacing: 7 }}>
-              Begin
-            </Text>
-          )}
-        </Halo>
-        {/* {step === 'landing' && <LandingStep onNext={() => setStep('name')} />}
-        {step === 'name' && (
+          <Animated.View style={{ opacity: haloOpacity }}>
+            <Halo onPress={() => goToNextStep('name')}>
+              {step === 'landing' && (
+                <Text style={{ color: '#e5e7eb', fontSize: 40, letterSpacing: 7 }}>
+                  Begin
+                </Text>
+              )}
+            </Halo>
+          </Animated.View>
+          
+
+          {step === 'name' && (
           <NameStep
             onNext={(name) => {
               setUserName(name);
@@ -43,9 +67,9 @@ export default function App() {
             }}
           />
         )}
-        {step === 'prayer' && <PrayerStep onSubmit={(prayer) => setStep('submitted')} />}
-        {step === 'submitted' && <SubmittedStep />} */}
-      </View>
+        {step === 'prayer' && <PrayerStep onSubmit={() => setStep('submitted')} />}
+        {step === 'submitted' && <SubmittedStep />}
+        </View>
       </View>
 
       <View style={styles.bottomSection}>
