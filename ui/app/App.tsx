@@ -43,6 +43,17 @@ export default function App() {
     }
   }, [step]);
 
+  useEffect(() => {
+    if (step === 'landing') {
+      haloAnim.setValue(0);
+      Animated.timing(haloAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [step]);
+
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
