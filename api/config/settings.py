@@ -108,6 +108,12 @@ DATABASES = {
     }
 }
 
+MAILGUN_API_KEY = os.environ["MAILGUN_API_KEY"]
+MAILGUN_DOMAIN = os.environ["MAILGUN_DOMAIN"]
+MAILGUN_FROM = os.environ["MAILGUN_FROM"]
+ADMIN_NOTIFICATION_EMAIL = os.environ["ADMIN_NOTIFICATION_EMAIL"]
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

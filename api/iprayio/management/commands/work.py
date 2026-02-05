@@ -10,6 +10,7 @@ from django.utils import timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from iprayio.models import Prayer
+from iprayio.services.mailgun.mailgun_service import send_prayer_notification
 
 
 WORKER_ID = socket.gethostname()
@@ -36,7 +37,10 @@ def start_health_server():
 
 def process_prayer(prayer: Prayer) -> None:
     """Perform side effects for a prayer (MUST be idempotent)"""
-    # send_email(prayer)
+    try:
+        send_prayer_notification(prayer)
+    except Exception as e:
+        print(f'failed to send email: {e}')
     # send_sms(prayer)
     pass
 
