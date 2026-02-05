@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Prayer(models.Model):
-    class PrayerStatus(models.TextChoices):
+    class Status(models.TextChoices):
         INCOMPLETE = "incomplete"
         PROCESSING = "processing"
         COMPLETE = "complete"
@@ -19,7 +19,7 @@ class Prayer(models.Model):
     sms_sent = models.BooleanField(default=False)
     email_error = models.TextField(blank=True, null=True)
     sms_error = models.TextField(blank=True, null=True)
-    prayer_status = models.CharField(max_length=20, choices=PrayerStatus.choices, default=PrayerStatus.INCOMPLETE, db_index=True)
+    prayer_status = models.CharField(max_length=20, choices=Status.choices, default=Status.INCOMPLETE, db_index=True)
 
     class Meta:
         indexes = [
