@@ -11,7 +11,6 @@ from .models import Prayer
 from .serializers import PrayerCreateSerializer, PrayerDetailSerializer
 
 
-RATE_LIMIT_MINUTES = 2
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
 
 
@@ -47,7 +46,7 @@ class PrayerCreateView(APIView):
             text=text,
             content_hash=content_hash,
             user_ip_address=ip_address,
-            next_allowed_at=now() + timedelta(minutes=RATE_LIMIT_MINUTES),
+            next_allowed_at=now() + timedelta(minutes=settings.RATE_LIMIT_MINUTES),
             user_name=serializer.validated_data.get('user_name') or 'Anonymous'
         )
 
