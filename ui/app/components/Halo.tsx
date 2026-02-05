@@ -1,11 +1,11 @@
 import { useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, Animated, Easing, Platform, Dimensions } from "react-native";
+import { View, StyleSheet, Text, Animated, Easing, Pressable, Platform, Dimensions } from "react-native";
 
-type HaloProps = {
-  label?: string;
+type Props = {
+  onPress?: () => void;
 };
 
-export default function Halo({ label }: HaloProps) {
+export default function Halo({ onPress }: Props) {
 
   const outerSpin = useRef(new Animated.Value(0)).current;
   const innerSpin = useRef(new Animated.Value(0)).current;
@@ -42,25 +42,22 @@ export default function Halo({ label }: HaloProps) {
   });
 
   return (
-    <View style={styles.haloWrapper}>
-      <Animated.View
-        style={[
-          styles.outerHalo,
-          { transform: [{ rotate: outerRotate }] },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.innerHalo,
-          { transform: [{ rotate: innerRotate }] },
-        ]}
-      />
-      {label ? (
-      <Text style={styles.haloLabel}>
-        {label}
-      </Text>
-    ) : null}
-    </View>
+    <Pressable onPress={onPress} style={styles.pressable}>
+      <View style={styles.haloWrapper}>
+        <Animated.View
+          style={[
+            styles.outerHalo,
+            { transform: [{ rotate: outerRotate }] },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.innerHalo,
+            { transform: [{ rotate: innerRotate }] },
+          ]}
+        />
+      </View>
+    </Pressable>
   );
 }
 
@@ -76,6 +73,11 @@ const HALO_SIZE = isMobileWeb
     : 400;              // native
 
 const styles = StyleSheet.create({
+  pressable: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
   haloWrapper: {
     width: HALO_SIZE,
     height: HALO_SIZE,
