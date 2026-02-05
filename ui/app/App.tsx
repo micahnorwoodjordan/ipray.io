@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, Button, StyleSheet, Animated, Easing } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
+import { useIdlePulse } from './animations/pulse';
+
 import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
@@ -11,19 +13,28 @@ import SubmittedStep from './components/steps/SubmittedStep';
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
   const [userName, setUserName] = useState<string>('');
+
   const haloAnim = useRef(new Animated.Value(1)).current;
+  const haloPulse = useIdlePulse(step === 'landing');
 
   const haloAnimatedStyle = {
     opacity: haloAnim,
     transform: [
       {
-        scale: haloAnim.interpolate({
+        scale: haloAnim.interpolate({  // ripple transition
           inputRange: [0, 1],
           outputRange: [1.4, 1],
         }),
       },
+      {
+        scale: haloPulse.interpolate({  // pulse effect
+          inputRange: [0, 1],
+          outputRange: [1, 1.05],
+        }),
+      },
     ],
   };
+
 
   const scriptureAnimatedStyle = {
     opacity: haloAnim,
@@ -37,7 +48,6 @@ export default function App() {
     ],
   };
 
-
 const transitionToNameStepanimation = Animated.timing(haloAnim, {
       toValue: 0,
       duration: 750,
@@ -49,7 +59,7 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
     transitionToNameStepanimation.start(() => {
       setStep(nextStep);
     });
-};
+  };
 
   useEffect(() => {
     if (step === 'submitted') {
