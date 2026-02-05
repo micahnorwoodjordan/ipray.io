@@ -1,10 +1,13 @@
 import time
 import socket
+import threading
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from iprayio.models import Prayer
 
@@ -12,6 +15,23 @@ from iprayio.models import Prayer
 WORKER_ID = socket.gethostname()
 POLL_INTERVAL_SECONDS = 2
 LEASE_TIMEOUT = timedelta(minutes=5)
+
+
+def start_health_server():
+    try:
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok")
+
+            def log_message(self, format, *args):
+                return  # silence logs
+
+        server = HTTPServer(("0.0.0.0", 8080), Handler)
+        server.serve_forever()
+    except Exception as e:
+        print(f"Health server failed: {e}")
 
 
 def process_prayer(prayer: Prayer) -> None:
@@ -25,6 +45,8 @@ class Command(BaseCommand):
     help = "Runs the background worker that processes prayer notifications."
 
     def handle(self, *args, **options):
+        threading.Thread(target=start_health_server, daemon=True).start()
+        self.stdout.write(self.style.SUCCESS("Prayer worker ready for health checks"))
         self.stdout.write(self.style.SUCCESS(f"Prayer worker started (worker_id={WORKER_ID})"))
 
         while True:
