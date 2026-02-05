@@ -1,22 +1,51 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import Halo from './components/Halo';
+// import LandingStep from './components/steps/LandingStep';
+// import NameStep from './components/steps/NameStep';
+// import PrayerStep from './components/steps/PrayerStep';
+// import SubmittedStep from './components/steps/SubmittedStep';
 
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>(
-  'landing'
-);
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    if (step === 'submitted') {
+      const timer = setTimeout(() => setStep('landing'), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
-
+      
       <View style={styles.topSection}>
-        <Halo label={step === 'landing' ? 'Tap to begin' : undefined} />
-        <View style={styles.content} />
+        <View style={styles.content}>
+        <Halo onPress={() => setStep('name')}>
+          {step === 'landing' && (
+            <Text style={{ color: '#e5e7eb', fontSize: 20, fontWeight: 'bold' }}>
+              Begin
+            </Text>
+          )}
+        </Halo>
+        {/* {step === 'landing' && <LandingStep onNext={() => setStep('name')} />}
+        {step === 'name' && (
+          <NameStep
+            onNext={(name) => {
+              setUserName(name);
+              setStep('prayer');
+            }}
+          />
+        )}
+        {step === 'prayer' && <PrayerStep onSubmit={(prayer) => setStep('submitted')} />}
+        {step === 'submitted' && <SubmittedStep />} */}
+      </View>
       </View>
 
       <View style={styles.bottomSection}>
@@ -52,7 +81,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 
-  /* Content */
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -72,13 +100,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#d1d5db',
     opacity: 0.6,
     marginBottom: 16,
-  },
-
-  copy: {
-    textAlign: 'center',
-    fontSize: 15,
-    lineHeight: 22,
-    color: '#d1d5db',
   },
 
   scripture: {

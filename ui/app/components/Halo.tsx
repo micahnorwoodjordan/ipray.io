@@ -3,9 +3,10 @@ import { View, StyleSheet, Text, Animated, Easing, Pressable, Platform, Dimensio
 
 type Props = {
   onPress?: () => void;
+  children?: React.ReactNode;
 };
 
-export default function Halo({ onPress }: Props) {
+export default function Halo({ onPress, children }: Props) {
 
   const outerSpin = useRef(new Animated.Value(0)).current;
   const innerSpin = useRef(new Animated.Value(0)).current;
@@ -44,18 +45,9 @@ export default function Halo({ onPress }: Props) {
   return (
     <Pressable onPress={onPress} style={styles.pressable}>
       <View style={styles.haloWrapper}>
-        <Animated.View
-          style={[
-            styles.outerHalo,
-            { transform: [{ rotate: outerRotate }] },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.innerHalo,
-            { transform: [{ rotate: innerRotate }] },
-          ]}
-        />
+        <Animated.View style={[styles.outerHalo, { transform: [{ rotate: outerRotate }] }]} />
+        <Animated.View style={[styles.innerHalo, { transform: [{ rotate: innerRotate }] }]} />
+        {children && <View style={styles.centerContent}>{children}</View>}
       </View>
     </Pressable>
   );
@@ -73,6 +65,12 @@ const HALO_SIZE = isMobileWeb
     : 400;              // native
 
 const styles = StyleSheet.create({
+  centerContent: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   pressable: {
     justifyContent: 'center',
     alignItems: 'center'
