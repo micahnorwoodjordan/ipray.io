@@ -1,75 +1,24 @@
-import { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Platform, Dimensions} from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
+import Halo from './components/Halo';
+
+
 export default function App() {
-  const outerSpin = useRef(new Animated.Value(0)).current;
-  const innerSpin = useRef(new Animated.Value(0)).current;
-
-  const runRotation = (animatedValue: Animated.Value, duration: number) => {
-    Animated.sequence([
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: true,
-      }),
-    ]).start(() => runRotation(animatedValue, duration)); // recursive loop
-  };
-
-  useEffect(() => {
-    runRotation(outerSpin, 30000); // 60s per rotation
-    runRotation(innerSpin, 15000); // 15s per rotation
-  }, []);
-
-  const outerRotate = outerSpin.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  const innerRotate = innerSpin.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['360deg', '0deg'],
-  });
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>(
+  'landing'
+);
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      {/* TOP / CENTER CONTENT */}
       <View style={styles.topSection}>
-        <View style={styles.haloWrapper}>
-          <Animated.View
-            style={[
-              styles.outerHalo,
-              { transform: [{ rotate: outerRotate }] },
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.innerHalo,
-              { transform: [{ rotate: innerRotate }] },
-            ]}
-          />
-
-          <View style={styles.content}>
-            <Text style={styles.title}>ipray.io</Text>
-            <View style={styles.divider} />
-            <Text style={styles.copy}>
-              This site is under active development.{'\n\n'}
-              Soon, it will offer a simple way to share prayer requests
-              and ensure they're faithfully prayed for.
-            </Text>
-          </View>
-        </View>
+        <Halo label={step === 'landing' ? 'Tap to begin' : undefined} />
+        <View style={styles.content} />
       </View>
 
-      {/* BOTTOM CONTENT */}
       <View style={styles.bottomSection}>
         <Text style={styles.scripture}>
           “Therefore, confess your sins to one another and pray for one another,
@@ -77,22 +26,10 @@ export default function App() {
           as it is working.”{'\n'}
           — James 5:16 (ESV)
         </Text>
-        <Text style={styles.footer}>Coming Soon</Text>
       </View>
     </View>
   );
 }
-
-const { width, height } = Dimensions.get('window');
-
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const HALO_SIZE = isMobileWeb
-  ? width * 0.95       // mobile web
-  : isWeb
-  ? width * 0.3       // desktop web
-  : 400;              // native
 
 const styles = StyleSheet.create({
   root: {
@@ -113,34 +50,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 32,
     paddingHorizontal: 24,
-  },
-
-  /* Halo */
-  haloWrapper: {
-    width: HALO_SIZE,
-    height: HALO_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  outerHalo: {
-    position: 'absolute',
-    width: HALO_SIZE,
-    height: HALO_SIZE,
-    borderRadius: HALO_SIZE / 2,
-    borderWidth: 2,
-    borderColor: 'rgba(229,231,235,0.25)',
-    borderTopColor: '#219d51',
-  },
-
-  innerHalo: {
-    position: 'absolute',
-    width: HALO_SIZE - 24,
-    height: HALO_SIZE - 24,
-    borderRadius: (HALO_SIZE - 24) / 2,
-    borderWidth: 1.5,
-    borderColor: 'rgba(229,231,235,0.2)',
-    borderBottomColor: '#f97316',
   },
 
   /* Content */
