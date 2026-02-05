@@ -20,6 +20,9 @@ class Prayer(models.Model):
     email_error = models.TextField(blank=True, null=True)
     sms_error = models.TextField(blank=True, null=True)
     prayer_status = models.CharField(max_length=20, choices=Status.choices, default=Status.INCOMPLETE, db_index=True)
+    processing_started_at = models.DateTimeField(null=True, blank=True)
+    processing_by = models.CharField(max_length=64, null=True, blank=True)
+    attempt_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         indexes = [

@@ -52,8 +52,6 @@ class PrayerCreateView(APIView):
             user_name=serializer.validated_data.get('user_name') or 'Anonymous'
         )
 
-        # TODO: enqueue notification worker here
-
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
 
