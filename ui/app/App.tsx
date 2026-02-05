@@ -14,24 +14,39 @@ export default function App() {
   const haloAnim = useRef(new Animated.Value(1)).current;
 
   const haloAnimatedStyle = {
-  opacity: haloAnim,
-  transform: [
-    {
-      scale: haloAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1.4, 1],
-      }),
-    },
-  ],
-};
+    opacity: haloAnim,
+    transform: [
+      {
+        scale: haloAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1.4, 1],
+        }),
+      },
+    ],
+  };
 
-  const animateHaloOut = (nextStep: typeof step) => {
-    Animated.timing(haloAnim, {
+  const scriptureAnimatedStyle = {
+    opacity: haloAnim,
+    transform: [
+      {
+        translateY: haloAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-12, 0], // subtle upward release
+        }),
+      },
+    ],
+  };
+
+
+const transitionToNameStepanimation = Animated.timing(haloAnim, {
       toValue: 0,
       duration: 750,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
-    }).start(() => {
+  });
+
+  const runBeginTransition = (nextStep: typeof step) => {
+    transitionToNameStepanimation.start(() => {
       setStep(nextStep);
     });
 };
@@ -62,7 +77,7 @@ export default function App() {
         <View style={styles.content}>
           {step === 'landing' && (
             <Animated.View style={[styles.haloContainer, haloAnimatedStyle]}>
-              <Halo onPress={() => animateHaloOut('name')}>
+              <Halo onPress={() => runBeginTransition('name')}>
                 <Text style={styles.beginText}>Begin</Text>
               </Halo>
             </Animated.View>
@@ -83,12 +98,14 @@ export default function App() {
 
       <View style={styles.bottomSection}>
         {step === 'landing' && (
-          <Text style={styles.scripture}>
-          “Therefore, confess your sins to one another and pray for one another,
-          that you may be healed. The prayer of a righteous person has great power
-          as it is working.”{'\n'}
-          — James 5:16 (ESV)
-        </Text>
+          <Animated.View>
+            <Animated.Text style={[styles.scripture, scriptureAnimatedStyle]}>
+              “Therefore, confess your sins to one another and pray for one another,
+              that you may be healed. The prayer of a righteous person has great power
+              as it is working.”{'\n'}
+              — James 5:16 (ESV)
+            </Animated.Text>
+          </Animated.View>
         )}
       </View>
     </View>
