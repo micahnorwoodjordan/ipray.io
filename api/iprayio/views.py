@@ -49,6 +49,7 @@ class PrayerCreateView(APIView):
             user_email=email,
             user_ip_address=ip_address,
             next_allowed_at=now() + timedelta(hours=RATE_LIMIT_HOURS),
+            user_name=serializer.validated_data.get('user_name') or 'Anonymous'
         )
 
         # TODO: enqueue notification worker here
@@ -72,3 +73,11 @@ class PrayerFulfillView(APIView):
         prayer.save(update_fields=["fulfilled_at"])
 
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_200_OK)
+
+
+class PingView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
