@@ -1,20 +1,15 @@
+"""
+this isn't the most graceful looking client, but there is no graceful abstraction for the Mailgun client.
+the Python SDK code would look almost identical to the below
+"""
+
 import requests
 from django.conf import settings
 
 
-def send_prayer_notification(prayer):
-    subject = "New Prayer Request Submitted"
-    text = f"""
-A new prayer request has been submitted.
-
-From: {prayer.user_name}
-Email: {prayer.user_email or "Anonymous"}
-IP: {prayer.user_ip_address}
-
-Prayer:
-{prayer.text}
-"""
-
+def send_prayer_notification_email(prayer):
+    subject = "New prayer request!"
+    text = f'New prayer request from {prayer.user_name or "Anonymous"} ({prayer.user_email or "Anonymous"})\nPrayer: {prayer.text}'
     response = requests.post(
         f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
         auth=("api", settings.MAILGUN_API_KEY),

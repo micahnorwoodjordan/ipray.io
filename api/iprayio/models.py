@@ -5,6 +5,7 @@ class Prayer(models.Model):
     class Status(models.TextChoices):
         INCOMPLETE = "incomplete"
         PROCESSING = "processing"
+        RECEIVED = "received"
         COMPLETE = "complete"
         FAILED = "failed"
 
