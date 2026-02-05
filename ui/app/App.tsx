@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, Button, StyleSheet, Animated } from 'react-native';
+import { View, Text, Button, StyleSheet, Animated, Easing } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import Halo from './components/Halo';
@@ -12,19 +12,30 @@ import SubmittedStep from './components/steps/SubmittedStep';
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
   const [userName, setUserName] = useState<string>('');
+  const haloAnim = useRef(new Animated.Value(1)).current;
 
-  const haloOpacity = useRef(new Animated.Value(1)).current;
+  const haloAnimatedStyle = {
+  opacity: haloAnim,
+  transform: [
+    {
+      scale: haloAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1.4, 1],
+      }),
+    },
+  ],
+};
 
-  const fadeOutHalo = (callback?: () => void) => {
-    Animated.timing(haloOpacity, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true,
-    }).start(() => {
-      if (callback) callback();
-      haloOpacity.setValue(1); // reset for next time
-    });
-  };
+  const animateHaloOut = (nextStep: typeof step) => {
+  Animated.timing(haloAnim, {
+    toValue: 0,
+    duration: 600,
+    easing: Easing.out(Easing.quad),
+    useNativeDriver: true,
+  }).start(() => {
+    setStep(nextStep);
+  });
+};
 
   useEffect(() => {
     if (step === 'submitted') {
@@ -33,31 +44,19 @@ export default function App() {
     }
   }, [step]);
 
-  const goToNextStep = (nextStep: typeof step) => {
-    if (step === 'landing') {
-      fadeOutHalo(() => setStep(nextStep));
-    } else {
-      setStep(nextStep);
-    }
-  };
-
-
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
       
       <View style={styles.topSection}>
         <View style={styles.content}>
-          <Animated.View style={{ opacity: haloOpacity }}>
-            <Halo onPress={() => goToNextStep('name')}>
-              {step === 'landing' && (
-                <Text style={{ color: '#e5e7eb', fontSize: 40, letterSpacing: 7 }}>
-                  Begin
-                </Text>
-              )}
-            </Halo>
-          </Animated.View>
-          
+          {step === 'landing' && (
+            <Animated.View style={[styles.haloContainer, haloAnimatedStyle]}>
+              <Halo onPress={() => animateHaloOut('name')}>
+                <Text style={styles.beginText}>Begin</Text>
+              </Halo>
+            </Animated.View>
+          )}
 
           {step === 'name' && (
           <NameStep
@@ -85,6 +84,17 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  haloContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  beginText: {
+    color: '#e5e7eb',
+    fontSize: 35,
+    letterSpacing: 8
+  },
+
   root: {
     flex: 1,
     backgroundColor: '#111827',

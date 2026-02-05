@@ -59,7 +59,7 @@ const isWeb = Platform.OS === 'web';
 const isMobileWeb = isWeb && width < 480;
 
 const HALO_SIZE = isMobileWeb
-  ? width * 0.95       // mobile web
+  ? width * 0.8       // mobile web
   : isWeb
     ? width * 0.3       // desktop web
     : 400;              // native
