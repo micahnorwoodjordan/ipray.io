@@ -8,14 +8,14 @@ class PrayerAdmin(admin.ModelAdmin):
         'id',
         'created_at',
         'fulfilled_at',
-        'user_email',
+        'content_hash',
         'user_ip_address',
         'next_allowed_at',
     )
 
     list_filter = ('fulfilled_at', 'created_at')
 
-    search_fields = ('text', 'user_email', 'user_ip_address')
+    search_fields = ('text', 'content_hash', 'user_ip_address')
 
     readonly_fields = (
         'id',
@@ -24,7 +24,7 @@ class PrayerAdmin(admin.ModelAdmin):
         'next_allowed_at',
         'text',
         'user_name',
-        'user_email',
+        'content_hash',
         'email_sent',
         'sms_sent',
         'email_error',

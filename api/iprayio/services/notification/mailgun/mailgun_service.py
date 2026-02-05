@@ -9,7 +9,7 @@ from django.conf import settings
 
 def send_prayer_notification_email(prayer):
     subject = "New prayer request!"
-    text = f'New prayer request from {prayer.user_name or "Anonymous"} ({prayer.user_email or "Anonymous"})\nPrayer: {prayer.text}'
+    text = f'New prayer request from {prayer.user_name or "Anonymous"}\nPrayer: {prayer.text}'
     response = requests.post(
         f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
         auth=("api", settings.MAILGUN_API_KEY),
