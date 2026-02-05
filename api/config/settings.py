@@ -33,7 +33,7 @@ site_hosts = (
     'https://api.ipray.io'
 )
 
-CSRF_TRUSTED_ORIGINS, CORS_ALLOWED_ORIGINS = site_hosts
+CSRF_TRUSTED_ORIGINS, CORS_ALLOWED_ORIGINS = site_hosts, site_hosts
 
 # Application definition
 
