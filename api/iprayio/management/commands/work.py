@@ -1,9 +1,7 @@
 import time
 import socket
 import threading
-from enum import Enum
 from datetime import timedelta
-from dataclasses import dataclass
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -12,19 +10,7 @@ from django.utils import timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from iprayio.models import Prayer
-from iprayio.services.mailgun.mailgun_service import send_prayer_notification_email
-
-
-class NotificationMethod(Enum):
-    EMAIL = 1
-    SMS = 2
-
-
-@dataclass
-class NotificationSummary:
-    email_sent: bool
-    sms_sent: bool
-    error: str
+from iprayio.services.notification.notification_service import NotificationService, NotificationMethod
 
 
 WORKER_ID = socket.gethostname()
@@ -76,20 +62,6 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(self.style.ERROR(str(e)))
                 time.sleep(5)
-    
-    def notify_admin(self, method: NotificationMethod, prayer: Prayer) -> NotificationSummary:
-        try:
-            if method == NotificationMethod.EMAIL:
-                send_prayer_notification_email(prayer)
-                print(f'sent email for prayer {prayer.id}')
-                return NotificationSummary(True, False, None)
-            elif method == NotificationMethod.SMS:
-                # send_prayer_notification_sms(prayer)
-                print(f'sent sms for prayer {prayer.id}')
-                return NotificationSummary(False, True, None)
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'failed to send notification {method.name.lower()}: {e}'))
-            return NotificationSummary(False, False, str(e))
 
     def reclaim_stuck_prayers(self) -> None:
         cutoff = timezone.now() - LEASE_TIMEOUT
@@ -117,8 +89,9 @@ class Command(BaseCommand):
             if not prayer:
                 return None
 
-            email_summary = self.notify_admin(NotificationMethod.EMAIL, prayer)
-            sms_summary = self.notify_admin(NotificationMethod.SMS, prayer)
+            notification_service = NotificationService()
+            email_summary = notification_service.notify_admin(NotificationMethod.EMAIL, prayer)
+            sms_summary = notification_service.notify_admin(NotificationMethod.SMS, prayer)
 
             prayer.prayer_status = Prayer.Status.RECEIVED
             prayer.processing_started_at = timezone.now()
