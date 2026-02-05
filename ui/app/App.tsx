@@ -3,7 +3,6 @@ import { View, Text, Button, StyleSheet, Animated, Easing } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import Halo from './components/Halo';
-import LandingStep from './components/steps/LandingStep';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
