@@ -6,11 +6,11 @@ services:
       context: api
       dockerfile: Dockerfile
     container_name: iprayio.api
-    command: python api/manage.py runserver 0.0.0.0:8000
+    command: gunicorn --chdir api --worker-tmp-dir /dev/shm -c api/iprayio/gunicorn/conf.py config.wsgi:application
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - 80:80
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
