@@ -10,7 +10,7 @@ from .models import Prayer
 from .serializers import PrayerCreateSerializer, PrayerDetailSerializer
 
 
-RATE_LIMIT_HOURS = 6
+RATE_LIMIT_MINUTES = 2
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
 
 
@@ -21,11 +21,8 @@ def get_client_ip(request):
     return request.META.get("REMOTE_ADDR")
 
 
-def is_rate_limited(ip_address: str, email: str | None):
-    """Return True if this IP/email is still within the cooldown window."""
-    qs = Prayer.objects.filter(user_ip_address=ip_address)
-    if email:
-        qs = qs | Prayer.objects.filter(user_email=email)
+def is_rate_limited(ip_address: str, content_hash: str):
+    qs = Prayer.objects.filter(user_ip_address=ip_address, content_hash=content_hash)
     latest = qs.order_by("-created_at").first()
     if not latest:
         return False
@@ -39,16 +36,16 @@ class PrayerCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         ip_address = get_client_ip(request)
-        email = serializer.validated_data.get("user_email")
+        content_hash = serializer.validated_data.get("content_hash")
 
-        if is_rate_limited(ip_address, email):
+        if is_rate_limited(ip_address, content_hash):
             return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         prayer = Prayer.objects.create(
             text=serializer.validated_data["text"],
-            user_email=email,
+            content_hash=content_hash,
             user_ip_address=ip_address,
-            next_allowed_at=now() + timedelta(hours=RATE_LIMIT_HOURS),
+            next_allowed_at=now() + timedelta(minutes=RATE_LIMIT_MINUTES),
             user_name=serializer.validated_data.get('user_name') or 'Anonymous'
         )
 
