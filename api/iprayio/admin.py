@@ -24,7 +24,14 @@ class PrayerAdmin(admin.ModelAdmin):
         'next_allowed_at',
         'text',
         'user_name',
-        'user_email'
+        'user_email',
+        'email_sent',
+        'sms_sent',
+        'email_error',
+        'sms_error',
+        'processing_started_at',
+        'processing_by',
+        'attempt_count'
     )
 
     # Default ordering

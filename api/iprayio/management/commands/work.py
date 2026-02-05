@@ -10,6 +10,7 @@ from django.utils import timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from iprayio.models import Prayer
+from iprayio.services.notification.notification_service import NotificationService, NotificationMethod
 
 
 WORKER_ID = socket.gethostname()
@@ -34,13 +35,6 @@ def start_health_server():
         print(f"Health server failed: {e}")
 
 
-def process_prayer(prayer: Prayer) -> None:
-    """Perform side effects for a prayer (MUST be idempotent)"""
-    # send_email(prayer)
-    # send_sms(prayer)
-    pass
-
-
 class Command(BaseCommand):
     help = "Runs the background worker that processes prayer notifications."
 
@@ -59,7 +53,7 @@ class Command(BaseCommand):
                     time.sleep(POLL_INTERVAL_SECONDS)
                     continue
 
-                self.process_claimed_prayer(prayer)
+                # self.mark_prayer_complete(prayer)
 
             except KeyboardInterrupt:
                 self.stdout.write(self.style.WARNING("Worker shutting down"))
@@ -95,10 +89,18 @@ class Command(BaseCommand):
             if not prayer:
                 return None
 
-            prayer.prayer_status = Prayer.Status.PROCESSING
+            notification_service = NotificationService()
+            email_summary = notification_service.notify_admin(NotificationMethod.EMAIL, prayer)
+            sms_summary = notification_service.notify_admin(NotificationMethod.SMS, prayer)
+
+            prayer.prayer_status = Prayer.Status.RECEIVED
             prayer.processing_started_at = timezone.now()
             prayer.processing_by = WORKER_ID
             prayer.attempt_count += 1
+            prayer.email_sent = email_summary.email_sent
+            prayer.email_error = email_summary.error
+            prayer.sms_sent = sms_summary.sms_sent
+            prayer.sms_error = sms_summary.error
 
             prayer.save(
                 update_fields=[
@@ -111,19 +113,17 @@ class Command(BaseCommand):
 
             return prayer
 
-    def process_claimed_prayer(self, prayer: Prayer) -> None:
-        try:
-            process_prayer(prayer)
+    # def mark_prayer_complete(self, prayer: Prayer) -> None:
+    #     try:
+    #         prayer.prayer_status = Prayer.Status.COMPLETE
+    #         prayer.fulfilled_at = timezone.now()
+    #         prayer.save(update_fields=["prayer_status", "fulfilled_at"])
 
-            prayer.prayer_status = Prayer.Status.COMPLETE
-            prayer.fulfilled_at = timezone.now()
-            prayer.save(update_fields=["prayer_status", "fulfilled_at"])
+    #         self.stdout.write(f"Completed prayer {prayer.id}")
 
-            self.stdout.write(f"Completed prayer {prayer.id}")
+    #     except Exception as e:
+    #         prayer.prayer_status = Prayer.Status.FAILED
+    #         prayer.save(update_fields=["prayer_status"])
 
-        except Exception as e:
-            prayer.prayer_status = Prayer.Status.FAILED
-            prayer.save(update_fields=["prayer_status"])
-
-            self.stderr.write(self.style.ERROR(f"Failed prayer {prayer.id}: {e}"))
-            raise
+    #         self.stderr.write(self.style.ERROR(f"Failed prayer {prayer.id}: {e}"))
+    #         raise
