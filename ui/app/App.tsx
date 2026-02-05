@@ -27,14 +27,14 @@ export default function App() {
 };
 
   const animateHaloOut = (nextStep: typeof step) => {
-  Animated.timing(haloAnim, {
-    toValue: 0,
-    duration: 600,
-    easing: Easing.out(Easing.quad),
-    useNativeDriver: true,
-  }).start(() => {
-    setStep(nextStep);
-  });
+    Animated.timing(haloAnim, {
+      toValue: 0,
+      duration: 750,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => {
+      setStep(nextStep);
+    });
 };
 
   useEffect(() => {
@@ -72,12 +72,14 @@ export default function App() {
       </View>
 
       <View style={styles.bottomSection}>
-        <Text style={styles.scripture}>
+        {step === 'landing' && (
+          <Text style={styles.scripture}>
           “Therefore, confess your sins to one another and pray for one another,
           that you may be healed. The prayer of a righteous person has great power
           as it is working.”{'\n'}
           — James 5:16 (ESV)
         </Text>
+        )}
       </View>
     </View>
   );
