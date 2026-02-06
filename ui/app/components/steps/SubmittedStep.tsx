@@ -20,19 +20,30 @@ export default function SubmittedStep() {
   }, []);
 
   return (
-    <Animated.View style={[styles.container, { opacity }]}>
+    <View style={styles.container}>
       <View style={{ flex: 1 }} />
 
       <View style={styles.content}>
-        <Text style={styles.primary}>“But know that the LORD has set apart the godly for himself;</Text>
-        <Text style={styles.primary}>the LORD hears when I call to him.”</Text>
-        <Text style={styles.reference}>— Psalm 4:3</Text>
-        <View style={{ height: SPACING.xl }} />
-        <Text style={styles.secondary}>you don’t need to carry this anymore</Text>
+        <View style={styles.content}>
+          <Text style={styles.scripture}>
+            “But know that the LORD has set apart the godly for himself;
+          </Text>
+          <Text style={styles.scripture}>
+            the LORD hears when I call to him.”
+          </Text>
+
+          <Text style={styles.reference}>— Psalm 4:3</Text>
+
+          <View style={{ height: SPACING.xl }} />
+
+          <Text style={styles.reminder}>
+            you don’t need to carry this anymore
+          </Text>
+        </View>
       </View>
 
-      <View style={{ flex: 0.3 }} />
-    </Animated.View>
+      <View style={{ flex: 0.4 }} />
+    </View>
   );
 }
 
@@ -49,35 +60,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  primary: {
+  scripture: {
     fontSize: 22,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.92)',
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
-    lineHeight: 30,
-    textShadowColor: 'rgba(255, 255, 255, 0.6)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
+    lineHeight: 32,
   },
 
   reference: {
     marginTop: SPACING.sm,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',
   },
 
-  secondary: {
-  fontSize: 15,
-  color: '#f97316',
-  textAlign: 'center',
-  maxWidth: 280,
-  lineHeight: 22,
-
-  // static glow
-  textShadowColor: 'rgba(255, 255, 255, 0.6)',
-  textShadowOffset: { width: 0, height: 0 },
-  textShadowRadius: 6,
-},
-
+  reminder: {
+    fontSize: 15,
+    color: '#f97316',
+    textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 22,
+  },
 });
