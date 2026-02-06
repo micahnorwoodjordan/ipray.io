@@ -24,7 +24,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-
     shadowColor: '#000',
     shadowOpacity: 0.08,      // lighter shadow
     shadowRadius: 12,
@@ -34,7 +33,6 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: '500',        // not too bold
-    letterSpacing: 0.4,
+    letterSpacing: 3,
   },
 });
