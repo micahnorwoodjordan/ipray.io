@@ -73,7 +73,7 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
       haloAnim.setValue(0);
       Animated.timing(haloAnim, {
         toValue: 1,
-        duration: 400,
+        duration: 1000,
         useNativeDriver: true,
       }).start();
     }
