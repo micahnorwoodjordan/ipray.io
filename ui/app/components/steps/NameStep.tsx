@@ -2,19 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Animated, PanResponder, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 
-type Props = { onNext: (name: string) => void };
+type Props = { 
+  onNext: (name: string) => void;
+  onBack?: () => void;
+};
 
-export default function NameStep({ onNext }: Props) {
+export default function NameStep({ onNext, onBack }: Props) {
   const [name, setName] = useState('');
   const opacity = useRef(new Animated.Value(0)).current;
   const translateX = useRef(new Animated.Value(0)).current;
 
-  // fade in
+  // fade in on mount
   useEffect(() => {
     Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
-  // swipe gesture
+  // swipe gesture handler
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
@@ -22,11 +25,22 @@ export default function NameStep({ onNext }: Props) {
         translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
+        const screenWidth = Dimensions.get('window').width;
+
         if (gestureState.dx < -100) {
-          Animated.timing(translateX, { toValue: -Dimensions.get('window').width, duration: 200, useNativeDriver: true }).start(() => {
+          // swipe left → next
+          Animated.timing(translateX, { toValue: -screenWidth, duration: 200, useNativeDriver: true }).start(() => {
             onNext(name);
+            translateX.setValue(0); // reset for next mount
+          });
+        } else if (gestureState.dx > 100 && onBack) {
+          // swipe right → back
+          Animated.timing(translateX, { toValue: screenWidth, duration: 200, useNativeDriver: true }).start(() => {
+            onBack();
+            translateX.setValue(0); // reset for next mount
           });
         } else {
+          // snap back to center if threshold not reached
           Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
         }
       },
@@ -52,7 +66,9 @@ export default function NameStep({ onNext }: Props) {
           selectionColor="#fff"
         />
         <Text style={styles.note}>it's also fine to stay anonymous 🙂</Text>
-        <Text style={styles.hint}>Swipe left to continue</Text>
+        <Text style={styles.hint}>
+          Swipe left to continue{onBack ? ' or right to go back' : ''}
+        </Text>
       </View>
     </Animated.View>
   );
@@ -88,7 +104,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#fff',
     minWidth: '80%',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   note: {
     marginTop: SPACING.md,

@@ -2,14 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Animated, PanResponder, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 
-type Props = { onSubmit: (prayer: string) => void };
+type Props = {
+  onSubmit: (prayer: string) => void;
+  onBack?: () => void;
+};
 
-export default function PrayerStep({ onSubmit }: Props) {
+export default function PrayerStep({ onSubmit, onBack }: Props) {
   const [prayer, setPrayer] = useState('');
   const opacity = useRef(new Animated.Value(0)).current;
   const translateX = useRef(new Animated.Value(0)).current;
 
-  // fade in
+  // fade in on mount
   useEffect(() => {
     Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
@@ -22,11 +25,22 @@ export default function PrayerStep({ onSubmit }: Props) {
         translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
+        const screenWidth = Dimensions.get('window').width;
+
         if (gestureState.dx < -100) {
-          Animated.timing(translateX, { toValue: -Dimensions.get('window').width, duration: 200, useNativeDriver: true }).start(() => {
+          // swipe left → submit
+          Animated.timing(translateX, { toValue: -screenWidth, duration: 200, useNativeDriver: true }).start(() => {
             onSubmit(prayer);
+            translateX.setValue(0); // reset for next mount
+          });
+        } else if (gestureState.dx > 100 && onBack) {
+          // swipe right → back
+          Animated.timing(translateX, { toValue: screenWidth, duration: 200, useNativeDriver: true }).start(() => {
+            onBack();
+            translateX.setValue(0); // reset for next mount
           });
         } else {
+          // snap back to center if threshold not reached
           Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
         }
       },
@@ -51,7 +65,9 @@ export default function PrayerStep({ onSubmit }: Props) {
           textAlignVertical="top"
           selectionColor="#fff"
         />
-        <Text style={styles.hint}>Swipe left to submit</Text>
+        <Text style={styles.hint}>
+          Swipe left to submit{onBack ? ' or right to go back' : ''}
+        </Text>
       </View>
     </Animated.View>
   );
