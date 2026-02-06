@@ -1,98 +1,105 @@
-import { Dimensions, Platform } from 'react-native';
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-
-import { SoftButton } from '../SoftButton';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, StyleSheet, Animated, PanResponder, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 
 type Props = { onNext: (name: string) => void };
 
 export default function NameStep({ onNext }: Props) {
   const [name, setName] = useState('');
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  // fade in
+  useEffect(() => {
+    Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+  }, []);
+
+  // swipe gesture
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -100) {
+          Animated.timing(translateX, { toValue: -Dimensions.get('window').width, duration: 200, useNativeDriver: true }).start(() => {
+            onNext(name);
+          });
+        } else {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
   return (
-    <View style={styles.container}>
-      <View style={{ flex: 1 }} />
-      <View style={styles.form}>
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[styles.container, { opacity, transform: [{ translateX }] }]}
+    >
+      <View style={{ flex: 0.5 }} />
+      <View style={styles.centerContent}>
+        <Text style={styles.prompt}>who are you?</Text>
         <TextInput
           style={styles.input}
-          placeholder="anonymous"
-          placeholderTextColor="rgba(0,0,0,0.35)"
+          placeholder="name"
+          placeholderTextColor="rgba(255,255,255,0.6)"
           value={name}
           onChangeText={setName}
+          autoCapitalize="words"
+          textAlign="center"
+          selectionColor="#fff"
         />
-        <View style={{ height: SPACING.xl }} />
-        <SoftButton  title="continue" onPress={() => onNext(name)} />
+        <Text style={styles.note}>it's also fine to stay anonymous 🙂</Text>
+        <Text style={styles.hint}>Swipe left to continue</Text>
       </View>
-      <View style={{ flex: 0.25 }} />
-    </View>
+    </Animated.View>
   );
 }
 
 const { height: windowHeight } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  form: {
-    gap: SPACING.md,
-  },
-
   container: {
-    flex: 1,
+    flex: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: SPACING.lg,
     minHeight: Platform.OS === 'web' ? windowHeight : undefined,
+    backgroundColor: 'transparent',
   },
-
-  label: {
-    color: '#e5e7eb',
-    fontSize: 20,
-    marginBottom: 8
+  centerContent: {
+    width: '100%',
+    alignItems: 'center',
   },
-
-  primaryButton: {
-    marginTop: SPACING.lg,
-    paddingVertical: 18,
-    borderRadius: 999,
-
-    backgroundColor: '#219d51',
-
-    shadowColor: '#219d51',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-
-    elevation: 4,
-  },
-
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  prompt: {
+    fontSize: 22,
+    fontWeight: '500',
+    color: '#fff',
+    marginBottom: SPACING.md,
     textAlign: 'center',
   },
-
-  secondaryText: {
-  marginTop: SPACING.md,
-  fontSize: 15,
-  color: '#f97316',
-  textAlign: 'center',
-},
-
   input: {
-  backgroundColor: '#fff', // solid, grounded
-  paddingVertical: SPACING.md,
-  paddingHorizontal: SPACING.lg,
-  borderRadius: 16,
-  letterSpacing: 3,
-  textAlign: "center",
-  fontSize: 16,
-  color: '#111',           // strong text
-  borderWidth: 1,
-  borderColor: 'rgba(0,0,0,0.08)',
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowRadius: 6,
-  shadowOffset: { width: 0, height: 2 },
-},
-
-
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 16,
+    fontSize: 18,
+    color: '#fff',
+    minWidth: '80%',
+    textAlign: 'center'
+  },
+  note: {
+    marginTop: SPACING.md,
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  hint: {
+    marginTop: SPACING.lg,
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    textAlign: 'center',
+  },
 });
