@@ -38,7 +38,7 @@ export default function PrayerStep({ onSubmit }: Props) {
       {...panResponder.panHandlers}
       style={[styles.container, { opacity, transform: [{ translateX }] }]}
     >
-      <View style={{ flex: 0.5 }} />
+      <View style={{ flex: 0.3 }} />
       <View style={styles.centerContent}>
         <Text style={styles.prompt}>your prayer</Text>
         <TextInput

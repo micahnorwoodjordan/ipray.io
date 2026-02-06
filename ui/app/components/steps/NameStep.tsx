@@ -38,7 +38,7 @@ export default function NameStep({ onNext }: Props) {
       {...panResponder.panHandlers}
       style={[styles.container, { opacity, transform: [{ translateX }] }]}
     >
-      <View style={{ flex: 0.5 }} />
+      <View style={{ flex: 0.3 }} />
       <View style={styles.centerContent}>
         <Text style={styles.prompt}>who are you?</Text>
         <TextInput
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   note: {
     marginTop: SPACING.md,
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
   },
   hint: {

@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
 
   bottomSection: {
-    flex: 1,
+    flex: 0.5,
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: 32,
