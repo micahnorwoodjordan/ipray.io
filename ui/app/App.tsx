@@ -63,7 +63,7 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
 
   useEffect(() => {
     if (step === 'submitted') {
-      const timer = setTimeout(() => setStep('landing'), 4000);
+      const timer = setTimeout(() => setStep('landing'), 8000);
       return () => clearTimeout(timer);
     }
   }, [step]);
