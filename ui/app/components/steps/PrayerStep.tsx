@@ -1,46 +1,58 @@
-import { Dimensions, Platform } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, StyleSheet, Animated } from 'react-native';
-
-import { SoftButton } from '../SoftButton';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, StyleSheet, Animated, PanResponder, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 
 type Props = { onSubmit: (prayer: string) => void };
 
 export default function PrayerStep({ onSubmit }: Props) {
   const [prayer, setPrayer] = useState('');
-
-  // fade in animation
   const opacity = useRef(new Animated.Value(0)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
 
+  // fade in
   useEffect(() => {
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 700,
-      useNativeDriver: true,
-    }).start();
+    Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
-  return (
-    <Animated.View style={[styles.container, { opacity }]}>
-      <View style={{ flex: 1 }} />
+  // swipe gesture
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -100) {
+          Animated.timing(translateX, { toValue: -Dimensions.get('window').width, duration: 200, useNativeDriver: true }).start(() => {
+            onSubmit(prayer);
+          });
+        } else {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
-      <View style={styles.form}>
+  return (
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[styles.container, { opacity, transform: [{ translateX }] }]}
+    >
+      <View style={{ flex: 0.5 }} />
+      <View style={styles.centerContent}>
+        <Text style={styles.prompt}>your prayer</Text>
         <TextInput
           style={styles.input}
-          placeholder="our God hears"
-          placeholderTextColor="rgba(0,0,0,0.35)"
+          placeholder="our God hears ✝️"
+          placeholderTextColor="rgba(255,255,255,0.6)"
           value={prayer}
           onChangeText={setPrayer}
           multiline
           textAlignVertical="top"
+          selectionColor="#fff"
         />
-
-        <View style={{ height: SPACING.xl }} />
-        <SoftButton title="send" onPress={() => onSubmit(prayer)} />
+        <Text style={styles.hint}>Swipe left to submit</Text>
       </View>
-
-      <View style={{ flex: 0.25 }} />
     </Animated.View>
   );
 }
@@ -49,33 +61,45 @@ const { height: windowHeight } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: SPACING.lg,
     minHeight: Platform.OS === 'web' ? windowHeight : undefined,
+    backgroundColor: 'transparent',
   },
-
-  form: {
-    gap: SPACING.md,
+  centerContent: {
+    width: '100%',
+    alignItems: 'center',
   },
-
+  prompt: {
+    fontSize: 22,
+    fontWeight: '500',
+    color: '#fff',
+    marginBottom: SPACING.md,
+    textAlign: 'center',
+  },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     borderRadius: 16,
-
-    fontSize: 16,
-    color: '#111',
-    textAlign: "center",
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
-
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-
+    fontSize: 18,
+    color: '#fff',
+    minWidth: '80%',
+    textAlign: 'center',
     minHeight: 160,
-    lineHeight: 22,
+  },
+  note: {
+    marginTop: SPACING.md,
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  hint: {
+    marginTop: SPACING.lg,
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });
