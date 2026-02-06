@@ -31,16 +31,15 @@ export default function IntercessionStep({ onComplete }: { onComplete: () => voi
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: SPACING.xl,
+        paddingTop: SPACING.xxxl,
     },
 
 
     text: {
-        fontSize: 22,
-        letterSpacing: 4,
+        fontSize: 18,
+        letterSpacing: 7,
         color: 'rgba(255,255,255,0.8)',
         textAlign: 'center',
         fontStyle: 'italic',
