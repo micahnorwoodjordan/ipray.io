@@ -8,10 +8,11 @@ import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
+import IntercessionStep from './components/steps/IntercessionStep';
 
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
   const [userName, setUserName] = useState<string>('');
 
   const haloAnim = useRef(new Animated.Value(1)).current;
@@ -62,13 +63,6 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
   };
 
   useEffect(() => {
-    if (step === 'submitted') {
-      const timer = setTimeout(() => setStep('landing'), 8000);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
-  useEffect(() => {
     if (step === 'landing') {
       haloAnim.setValue(0);
       Animated.timing(haloAnim, {
@@ -102,7 +96,8 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
           />
         )}
         {step === 'prayer' && <PrayerStep onSubmit={() => setStep('submitted')} />}
-        {step === 'submitted' && <SubmittedStep />}
+        {step === 'submitted' && <SubmittedStep onNext={() => setStep('intercession')} />}
+        {step === 'intercession' && <IntercessionStep onComplete={() => setStep('landing')} />}
         </View>
       </View>
 
