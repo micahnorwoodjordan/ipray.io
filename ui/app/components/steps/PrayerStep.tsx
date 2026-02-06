@@ -17,7 +17,7 @@ export default function PrayerStep({ onSubmit }: Props) {
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="enter your prayer"
+          placeholder="our God hears"
           placeholderTextColor="rgba(0,0,0,0.35)"
           value={prayer}
           onChangeText={setPrayer}
@@ -26,7 +26,7 @@ export default function PrayerStep({ onSubmit }: Props) {
         />
 
         <View style={{ height: SPACING.xl }} />
-        <SoftButton title="submit" onPress={() => onSubmit(prayer)} />
+        <SoftButton title="send" onPress={() => onSubmit(prayer)} />
       </View>
 
       <View style={{ flex: 0.25 }} />
