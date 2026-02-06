@@ -1,6 +1,6 @@
 import { Dimensions, Platform } from 'react-native';
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TextInput, StyleSheet, Animated } from 'react-native';
 
 import { SoftButton } from '../SoftButton';
 import { SPACING } from '../../themes/spacing';
@@ -10,8 +10,19 @@ type Props = { onSubmit: (prayer: string) => void };
 export default function PrayerStep({ onSubmit }: Props) {
   const [prayer, setPrayer] = useState('');
 
+  // fade in animation
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity }]}>
       <View style={{ flex: 1 }} />
 
       <View style={styles.form}>
@@ -30,7 +41,7 @@ export default function PrayerStep({ onSubmit }: Props) {
       </View>
 
       <View style={{ flex: 0.25 }} />
-    </View>
+    </Animated.View>
   );
 }
 
