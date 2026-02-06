@@ -55,6 +55,9 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.92)',
     textAlign: 'center',
     lineHeight: 30,
+    textShadowColor: 'rgba(255, 255, 255, 0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
   },
 
   reference: {
@@ -65,10 +68,16 @@ const styles = StyleSheet.create({
   },
 
   secondary: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.65)',
-    textAlign: 'center',
-    maxWidth: 350,
-    lineHeight: 22,
-  },
+  fontSize: 15,
+  color: '#f97316',
+  textAlign: 'center',
+  maxWidth: 280,
+  lineHeight: 22,
+
+  // static glow
+  textShadowColor: 'rgba(255, 255, 255, 0.6)',
+  textShadowOffset: { width: 0, height: 0 },
+  textShadowRadius: 6,
+},
+
 });
