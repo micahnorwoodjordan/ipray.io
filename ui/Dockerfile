@@ -1,7 +1,8 @@
 FROM node:20-alpine
 
-COPY server.js .
 COPY . .
+
+RUN cd app && npm ci && npx expo export --platform web
 
 EXPOSE 443
 
