@@ -23,25 +23,26 @@ export default function SubmittedStep() {
     <View style={styles.container}>
       <View style={{ flex: 1 }} />
 
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity }]}>
         <View style={styles.content}>
-          <Text style={styles.scripture}>
-            “But know that the LORD has set apart the godly for himself;
-          </Text>
-          <Text style={styles.scripture}>
-            the LORD hears when I call to him.”
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.scripture}>
+              “But know that the LORD has set apart the godly for himself;
+            </Text>
+            <Text style={styles.scripture}>
+              the LORD hears when I call to him.”
+            </Text>
 
-          <Text style={styles.reference}>— Psalm 4:3</Text>
+            <Text style={styles.reference}>— Psalm 4:3</Text>
 
-          <View style={{ height: SPACING.xl }} />
+            <View style={{ height: SPACING.xl }} />
 
-          <Text style={styles.reminder}>
-            you don’t need to carry this anymore
-          </Text>
+            <Text style={styles.reminder}>
+              you don’t need to carry this anymore
+            </Text>
+          </View>
         </View>
-      </View>
-
+      </Animated.View>
       <View style={{ flex: 0.4 }} />
     </View>
   );
@@ -63,16 +64,24 @@ const styles = StyleSheet.create({
   scripture: {
     fontSize: 22,
     fontWeight: '500',
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255,255,255,0.95)',
     textAlign: 'center',
     lineHeight: 32,
+
+    textShadowColor: 'rgba(255,255,255,0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
   },
 
   reference: {
     marginTop: SPACING.sm,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'center',
+
+    textShadowColor: 'rgba(255,255,255,0.35)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
   },
 
   reminder: {
@@ -81,5 +90,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 22,
+
+    textShadowColor: 'rgba(249,115,22,0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
   },
 });
