@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
   },
 
   reminder: {
-    fontSize: 15,
+    fontSize: 13,
     color: '#f97316',
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 22,
 
-    textShadowColor: 'rgba(249,115,22,0.6)',
+    textShadowColor: 'rgba(255, 245, 230, 0.55)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
   },
 });
