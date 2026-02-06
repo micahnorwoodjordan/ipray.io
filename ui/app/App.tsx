@@ -88,7 +88,7 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
           {step === 'landing' && (
             <Animated.View style={[styles.haloContainer, haloAnimatedStyle]}>
               <Halo onPress={() => runBeginTransition('name')}>
-                <Text style={styles.beginText}>Begin</Text>
+                <Text style={styles.beginText}>let's pray 🙏🏽</Text>
               </Halo>
             </Animated.View>
           )}
