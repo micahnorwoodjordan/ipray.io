@@ -4,12 +4,13 @@ import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 
 type Props = {
-  onSubmit: (prayer: string) => void;
+  onNext: (prayer: string) => void;
   onBack?: () => void;
 };
 
-export default function PrayerStep({ onSubmit, onBack }: Props) {
+export default function PrayerStep({ onNext, onBack }: Props) {
   const [prayer, setPrayer] = useState('');
+  const prayerRef = useRef('');
   const opacity = useRef(new Animated.Value(0)).current;
 
   // fade in on mount
@@ -18,7 +19,7 @@ export default function PrayerStep({ onSubmit, onBack }: Props) {
   }, []);
 
   const { panResponder, translateX } = useSwipe({
-    onLeftSwipe: () => onSubmit(prayer),
+    onLeftSwipe: () => onNext(prayerRef.current),
     onRightSwipe: onBack,
   });
 
@@ -35,7 +36,10 @@ export default function PrayerStep({ onSubmit, onBack }: Props) {
           placeholder="our God hears ✝️"
           placeholderTextColor="rgba(255,255,255,0.6)"
           value={prayer}
-          onChangeText={setPrayer}
+          onChangeText={(text) => {
+            setPrayer(text);
+            prayerRef.current = text;
+          }}
           multiline
           textAlignVertical="top"
           selectionColor="#fff"

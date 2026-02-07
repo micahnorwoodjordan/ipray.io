@@ -1,6 +1,6 @@
 export type PrayerSubmissionRequest = {
-  name?: string;
-  prayer: string;
+  user_name?: string;
+  text: string;
 };
 
 export type PrayerSubmissionResponse = {

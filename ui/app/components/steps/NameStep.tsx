@@ -10,10 +10,11 @@ type Props = {
 
 export default function NameStep({ onNext, onBack }: Props) {
   const [name, setName] = useState('');
+  const nameRef = useRef('');
   const opacity = useRef(new Animated.Value(0)).current;
 
   const { panResponder, translateX } = useSwipe({
-    onLeftSwipe: () => onNext(name),
+    onLeftSwipe: () => onNext(nameRef.current),
     onRightSwipe: onBack,
   });
 
@@ -35,7 +36,10 @@ export default function NameStep({ onNext, onBack }: Props) {
           placeholder="name"
           placeholderTextColor="rgba(255,255,255,0.6)"
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            nameRef.current = text;
+          }}
           autoCapitalize="words"
           textAlign="center"
           selectionColor="#fff"

@@ -3,34 +3,15 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
 import { SPACING } from '../../themes/spacing';
-import { submitPrayer } from '../../services/api/prayers';
 
 type Props = {
-  name?: string;
-  prayer: string;
   onNext: () => void;
 };
 
-export default function SubmittedStep({
-  name,
-  prayer,
-  onNext,
-}: Props) {
+export default function SubmittedStep({ onNext }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const hasSubmitted = useRef(false);
 
   useEffect(() => {
-    // --- API submission (quiet, once) ---
-    if (!hasSubmitted.current) {
-      hasSubmitted.current = true;
-
-      submitPrayer({ name, prayer }).catch(() => {
-        // intentionally silent
-        // user may resubmit by navigating back
-      });
-    }
-
-    // --- animation sequence ---
     Animated.sequence([
       Animated.timing(opacity, {
         toValue: 1,
@@ -46,7 +27,7 @@ export default function SubmittedStep({
 
     const timer = setTimeout(onNext, 7100);
     return () => clearTimeout(timer);
-  }, [name, prayer, onNext, opacity]);
+  }, [onNext, opacity]);
 
   return (
     <View style={styles.container}>
