@@ -44,9 +44,7 @@ export default function PrayerStep({ onNext, onBack }: Props) {
           textAlignVertical="top"
           selectionColor="#fff"
         />
-        <Text style={styles.hint}>
-          Swipe left to submit{onBack ? ' or right to go back' : ''}
-        </Text>
+        <Text style={styles.hint}>Swipe left to submit your prayer request</Text>
       </View>
     </Animated.View>
   );

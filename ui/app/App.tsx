@@ -111,6 +111,7 @@ export default function App() {
 
                 setStep('submitted');
               }}
+              onBack={() => setStep('name')}
             />
           )}
 

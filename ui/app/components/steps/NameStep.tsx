@@ -45,9 +45,7 @@ export default function NameStep({ onNext, onBack }: Props) {
           selectionColor="#fff"
         />
         <Text style={styles.note}>it's also fine to stay anonymous 🙂</Text>
-        <Text style={styles.hint}>
-          Swipe left to continue{onBack ? ' or right to go back' : ''}
-        </Text>
+        <Text style={styles.hint}>Swipe left to continue</Text>
       </View>
     </Animated.View>
   );
