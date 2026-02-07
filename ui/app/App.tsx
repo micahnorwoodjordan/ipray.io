@@ -16,6 +16,8 @@ export default function App() {
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
 
+  console.log(process.env.EXPO_PUBLIC_API_URL);
+
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
 

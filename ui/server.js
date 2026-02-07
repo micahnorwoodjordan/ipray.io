@@ -13,6 +13,8 @@ if (!EXPO_PUBLIC_API_URL) {
   console.warn("⚠️  EXPO_PUBLIC_API_URL is not set. /api requests will fail.");
 }
 
+console.log(EXPO_PUBLIC_API_URL);
+
 const server = http.createServer((req, res) => {
   // -----------------------------
   // API proxy
