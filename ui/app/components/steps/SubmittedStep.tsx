@@ -1,16 +1,16 @@
 import { Dimensions, Platform } from 'react-native';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
 import { SPACING } from '../../themes/spacing';
 
-type Props = { onNext: (name: string) => void };
+type Props = {
+  onNext: () => void;
+};
 
 export default function SubmittedStep({ onNext }: Props) {
-  const [name, setName] = useState('');
   const opacity = useRef(new Animated.Value(0)).current;
 
-  // fade in animation
   useEffect(() => {
     Animated.sequence([
       Animated.timing(opacity, {
@@ -21,59 +21,60 @@ export default function SubmittedStep({ onNext }: Props) {
       Animated.timing(opacity, {
         toValue: 0,
         duration: 7000,
-        useNativeDriver: true
-      })
+        useNativeDriver: true,
+      }),
     ]).start();
 
-    const timer = setTimeout(() => onNext(name), 7100);
+    const timer = setTimeout(onNext, 7100);
     return () => clearTimeout(timer);
-}, []);
+  }, [onNext, opacity]);
 
-return (
-  <View style={styles.container}>
-    <View style={{ flex: 1 }} />
+  return (
+    <View style={styles.container}>
+      <View style={{ flex: 1 }} />
 
-    <Animated.View style={[styles.content, { opacity }]}>
-      <View >
-        <Animated.Text
-          style={[
-            styles.confirmation,
-            {
-              opacity: opacity.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 0.7],
-              }),
-            },
-          ]}
-        >
-          Your prayer has been received.
-        </Animated.Text>
+      <Animated.View style={[styles.content, { opacity }]}>
+        <View>
+          <Animated.Text
+            style={[
+              styles.confirmation,
+              {
+                opacity: opacity.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 0.7],
+                }),
+              },
+            ]}
+          >
+            Your prayer has been received.
+          </Animated.Text>
 
-        <View style={{ height: SPACING.lg }} />
+          <View style={{ height: SPACING.lg }} />
 
-        <View style={styles.content}>
-          <Text style={styles.scripture}>
-            “But know that the LORD has set apart the godly for himself;
-          </Text>
-          <Text style={styles.scripture}>
-            the LORD hears when I call to him.”
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.scripture}>
+              “But know that the LORD has set apart the godly for himself;
+            </Text>
+            <Text style={styles.scripture}>
+              the LORD hears when I call to him.”
+            </Text>
 
-          <Text style={styles.reference}>— Psalm 4:3</Text>
+            <Text style={styles.reference}>— Psalm 4:3</Text>
 
-          <View style={{ height: SPACING.xl }} />
+            <View style={{ height: SPACING.xl }} />
 
-          <Text style={styles.reminder}>
-            you don’t need to carry this anymore
-          </Text>
+            <Text style={styles.reminder}>
+              you don’t need to carry this anymore
+            </Text>
+          </View>
         </View>
-      </View>
-    </Animated.View>
+      </Animated.View>
 
-    <View style={{ flex: 0.4 }} />
-  </View>
-);
+      <View style={{ flex: 0.4 }} />
+    </View>
+  );
 }
+
 
 const { height: windowHeight } = Dimensions.get('window');
 

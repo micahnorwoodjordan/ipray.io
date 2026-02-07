@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import json
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,10 +33,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ALLOWED_HOSTS = ['*']
 
-site_hosts = (
-    'https://ipray.io',
-    'https://api.ipray.io'
-)
+site_hosts = json.loads(os.environ['SITE_HOSTS'])['hosts']
 
 CSRF_TRUSTED_ORIGINS, CORS_ALLOWED_ORIGINS = site_hosts, site_hosts
 
