@@ -23,6 +23,7 @@ services:
       MAILGUN_FROM: ${MAILGUN_FROM}
       ADMIN_NOTIFICATION_EMAIL: ${ADMIN_NOTIFICATION_EMAIL}
       RATE_LIMIT_MINUTES: ${RATE_LIMIT_MINUTES}
+      SITE_HOSTS: ${SITE_HOSTS}
     restart: unless-stopped
     depends_on:
       - api
@@ -48,6 +49,7 @@ services:
       MAILGUN_FROM: ${MAILGUN_FROM}
       ADMIN_NOTIFICATION_EMAIL: ${ADMIN_NOTIFICATION_EMAIL}
       RATE_LIMIT_MINUTES: ${RATE_LIMIT_MINUTES}
+      SITE_HOSTS: ${SITE_HOSTS}
     restart: unless-stopped
 
   ui:

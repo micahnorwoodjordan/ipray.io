@@ -5,7 +5,11 @@ from django.conf import settings
 from django.http import HttpResponseForbidden
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import BasicAuthentication
 from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from .models import Prayer
 from .serializers import PrayerCreateSerializer, PrayerDetailSerializer
@@ -29,8 +33,12 @@ def is_rate_limited(ip_address: str, content_hash: str):
     return now() < latest.next_allowed_at
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class PrayerCreateView(APIView):
     """Public endpoint for submitting a prayer."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = PrayerCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
