@@ -14,6 +14,7 @@ import IntercessionStep from './components/steps/IntercessionStep';
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
   const [userName, setUserName] = useState<string>('');
+  const [prayerText, setPrayerText] = useState<string>('');
 
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
@@ -102,7 +103,14 @@ export default function App() {
               onBack={() => setStep('name')}
             />
           )}
-          {step === 'submitted' && <SubmittedStep onNext={() => setStep('intercession')} />}
+          {step === 'submitted' && (
+            <SubmittedStep
+              name={userName}
+              prayer={prayerText}
+              onNext={() => setStep('intercession')}
+            />
+          )}
+
           {step === 'intercession' && <IntercessionStep onComplete={() => setStep('landing')} />}
         </View>
       </View>
