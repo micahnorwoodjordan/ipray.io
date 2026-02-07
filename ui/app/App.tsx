@@ -8,10 +8,11 @@ import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
+import IntercessionStep from './components/steps/IntercessionStep';
 
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted'>('landing');
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
   const [userName, setUserName] = useState<string>('');
 
   const haloAnim = useRef(new Animated.Value(1)).current;
@@ -48,11 +49,11 @@ export default function App() {
     ],
   };
 
-const transitionToNameStepanimation = Animated.timing(haloAnim, {
-      toValue: 0,
-      duration: 750,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
+  const transitionToNameStepanimation = Animated.timing(haloAnim, {
+    toValue: 0,
+    duration: 750,
+    easing: Easing.out(Easing.quad),
+    useNativeDriver: true,
   });
 
   const runBeginTransition = (nextStep: typeof step) => {
@@ -60,13 +61,6 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
       setStep(nextStep);
     });
   };
-
-  useEffect(() => {
-    if (step === 'submitted') {
-      const timer = setTimeout(() => setStep('landing'), 8000);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
 
   useEffect(() => {
     if (step === 'landing') {
@@ -82,7 +76,7 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
-      
+
       <View style={styles.topSection}>
         <View style={styles.content}>
           {step === 'landing' && (
@@ -94,15 +88,22 @@ const transitionToNameStepanimation = Animated.timing(haloAnim, {
           )}
 
           {step === 'name' && (
-          <NameStep
-            onNext={(name) => {
-              setUserName(name);
-              setStep('prayer');
-            }}
-          />
-        )}
-        {step === 'prayer' && <PrayerStep onSubmit={() => setStep('submitted')} />}
-        {step === 'submitted' && <SubmittedStep />}
+            <NameStep
+              onNext={(name) => {
+                setUserName(name);
+                setStep('prayer');
+              }}
+              onBack={() => setStep('landing')}
+            />
+          )}
+          {step === 'prayer' && (
+            <PrayerStep
+              onSubmit={() => setStep('submitted')}
+              onBack={() => setStep('name')}
+            />
+          )}
+          {step === 'submitted' && <SubmittedStep onNext={() => setStep('intercession')} />}
+          {step === 'intercession' && <IntercessionStep onComplete={() => setStep('landing')} />}
         </View>
       </View>
 

@@ -4,4 +4,6 @@ export const SPACING = {
   md: 20,
   lg: 32,
   xl: 48,
+  xxl: 72,
+  xxxl: 120,
 } as const;
