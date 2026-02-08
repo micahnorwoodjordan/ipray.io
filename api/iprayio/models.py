@@ -24,6 +24,8 @@ class Prayer(models.Model):
     processing_started_at = models.DateTimeField(null=True, blank=True)
     processing_by = models.CharField(max_length=64, null=True, blank=True)
     attempt_count = models.PositiveIntegerField(default=0)
+    is_public = models.BooleanField(default=False, help_text="Whether the user has granted permission for this prayer to be shared publicly")
+    user_email = models.EmailField(null=True, blank=True, help_text="Optional email address for users who wish to receive updates when their prayer is fulfilled.")
 
     class Meta:
         indexes = [
