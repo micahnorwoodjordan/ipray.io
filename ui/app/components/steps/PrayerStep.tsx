@@ -52,6 +52,23 @@ export default function PrayerStep({ onNext, onBack }: Props) {
 
 const { height: windowHeight } = Dimensions.get('window');
 
+const { width, height } = Dimensions.get('window');
+
+const isWeb = Platform.OS === 'web';
+const isMobileWeb = isWeb && width < 480;
+
+const TEXTINPUT_WIDTH = isMobileWeb
+  ? width * 0.85       // mobile web
+  : isWeb
+    ? width * 0.5       // desktop web
+    : 400;              // native
+
+const TEXTINPUT_HEIGHT = isMobileWeb
+  ? width * 0.5       // mobile web
+  : isWeb
+    ? width * 0.2       // desktop web
+    : 200;              // native
+
 const styles = StyleSheet.create({
   container: {
     flex: 4,
@@ -79,9 +96,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     fontSize: 18,
     color: '#fff',
-    minWidth: '80%',
+    width: TEXTINPUT_WIDTH,
     textAlign: 'center',
-    minHeight: 160,
+    height: TEXTINPUT_HEIGHT
   },
   note: {
     marginTop: SPACING.md,
