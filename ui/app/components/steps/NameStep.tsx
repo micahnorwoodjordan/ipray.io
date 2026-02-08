@@ -28,7 +28,7 @@ export default function NameStep({ onNext, onBack }: Props) {
       {...panResponder.panHandlers}
       style={[styles.container, { opacity, transform: [{ translateX }] }]}
     >
-      <View style={{ flex: 0.3 }} />
+      <View style={{ flex: 0.15 }} />
       <View style={styles.centerContent}>
         <Text style={styles.prompt}>who are you?</Text>
         <TextInput

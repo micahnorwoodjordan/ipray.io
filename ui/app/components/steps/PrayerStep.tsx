@@ -39,7 +39,7 @@ export default function PrayerStep({ onNext, onBack }: Props) {
       {...panResponder.panHandlers}
       style={[styles.container, { opacity, transform: [{ translateX }] }]}
     >
-      <View style={{ flex: 0.5 }} />
+      <View style={{ flex: 0.25 }} />
       <View style={styles.centerContent}>
         <Text style={styles.prompt}>what's on your heart?</Text>
         <TextInput
