@@ -10,6 +10,7 @@ import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
+import FooterComponent from './components/FooterComponent';
 
 import { submitPrayer } from './services/api/prayers';
 
@@ -151,6 +152,7 @@ export default function App() {
           </Animated.View>
         )}
       </View>
+      <FooterComponent />
       <ErrorModal
         visible={showError}
         onDismiss={() => setShowError(false)}
@@ -171,7 +173,7 @@ const styles = StyleSheet.create({
 
   beginText: {
     color: '#e5e7eb',
-    fontSize: 22,
+    fontSize: 35,
     letterSpacing: 8
   },
 
