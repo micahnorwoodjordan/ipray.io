@@ -9,6 +9,8 @@ import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
+import TitleComponent from './components/TitleComponent';
+
 import { submitPrayer } from './services/api/prayers';
 
 import ErrorModal from './components/modals/ErrorModal';
@@ -85,15 +87,18 @@ export default function App() {
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
+      <TitleComponent />
 
       <View style={styles.topSection}>
-        <View style={styles.content}>
+        <View style={styles.content}>          
           {step === 'landing' && (
-            <Animated.View style={[styles.haloContainer, haloAnimatedStyle]}>
-              <Halo onPress={() => runBeginTransition('name')}>
-                <Text style={styles.beginText}>let's pray 🙏🏽</Text>
-              </Halo>
-            </Animated.View>
+            <View style={styles.haloContainer}>
+              <Animated.View style={haloAnimatedStyle}>
+                <Halo onPress={() => runBeginTransition('name')}>
+                  <Text style={styles.beginText}>start</Text>
+                </Halo>
+              </Animated.View>
+            </View>
           )}
 
           {step === 'name' && (
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
 
   beginText: {
     color: '#e5e7eb',
-    fontSize: 35,
+    fontSize: 22,
     letterSpacing: 8
   },
 
