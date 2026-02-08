@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Animated, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
+import WarningModal from '../modals/WarningModal';
 
 type Props = {
   onNext: (prayer: string) => void;
@@ -13,13 +14,23 @@ export default function PrayerStep({ onNext, onBack }: Props) {
   const prayerRef = useRef('');
   const opacity = useRef(new Animated.Value(0)).current;
 
+  const [showWarning, setShowWarning] = useState(false);
+
   // fade in on mount
   useEffect(() => {
     Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
+  const handleSubmit = () => {
+    if (!prayerRef.current.trim()) {
+      setShowWarning(true);
+      return;
+    }
+    onNext(prayerRef.current);
+  };
+
   const { panResponder, translateX } = useSwipe({
-    onLeftSwipe: () => onNext(prayerRef.current),
+    onLeftSwipe: handleSubmit,
     onRightSwipe: onBack,
   });
 
@@ -28,9 +39,9 @@ export default function PrayerStep({ onNext, onBack }: Props) {
       {...panResponder.panHandlers}
       style={[styles.container, { opacity, transform: [{ translateX }] }]}
     >
-      <View style={{ flex: 0.3 }} />
+      <View style={{ flex: 0.25 }} />
       <View style={styles.centerContent}>
-        <Text style={styles.prompt}>your prayer</Text>
+        <Text style={styles.prompt}>what's on your heart?</Text>
         <TextInput
           style={styles.input}
           placeholder="our God hears ✝️"
@@ -44,15 +55,25 @@ export default function PrayerStep({ onNext, onBack }: Props) {
           textAlignVertical="top"
           selectionColor="#fff"
         />
-        <Text style={styles.hint}>
-          Swipe left to submit{onBack ? ' or right to go back' : ''}
-        </Text>
+        <Text style={styles.hint}>Swipe left to submit your prayer request</Text>
       </View>
+
+      <WarningModal
+        visible={showWarning}
+        message="don't forget to enter your prayer request!"
+        onDismiss={() => setShowWarning(false)}
+      />
     </Animated.View>
   );
 }
 
-const { height: windowHeight } = Dimensions.get('window');
+const { height: windowHeight, width } = Dimensions.get('window');
+
+const isWeb = Platform.OS === 'web';
+const isMobileWeb = isWeb && width < 480;
+
+const TEXTINPUT_WIDTH = isMobileWeb ? width * 0.85 : isWeb ? width * 0.5 : 400;
+const TEXTINPUT_HEIGHT = isMobileWeb ? width * 0.5 : isWeb ? width * 0.2 : 200;
 
 const styles = StyleSheet.create({
   container: {
@@ -81,9 +102,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     fontSize: 18,
     color: '#fff',
-    minWidth: '80%',
+    width: TEXTINPUT_WIDTH,
     textAlign: 'center',
-    minHeight: 160,
+    height: TEXTINPUT_HEIGHT,
   },
   note: {
     marginTop: SPACING.md,

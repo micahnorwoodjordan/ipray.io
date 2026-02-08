@@ -31,7 +31,7 @@ export default function SubmittedStep({ onNext }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={{ flex: 1 }} />
+      <View style={{ flex: 0.6 }} />
 
       <Animated.View style={[styles.content, { opacity }]}>
         <View>

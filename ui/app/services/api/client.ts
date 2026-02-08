@@ -7,7 +7,6 @@ type ApiOptions = {
 };
 
 export async function sendApiRequest<T>(path: string, options: ApiOptions = {} ): Promise<T> {
-console.log(EXPO_PUBLIC_API_URL);
   const res = await fetch(`${EXPO_PUBLIC_API_URL}/${path}`, {
     method: options.method ?? "GET",
     headers: {

@@ -9,15 +9,25 @@ import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
+import TitleComponent from './components/TitleComponent';
+
 import { submitPrayer } from './services/api/prayers';
+
+import ErrorModal from './components/modals/ErrorModal';
+import LoadingModal from './components/modals/LoadingModal';
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
 
+  const [loading, setLoading] = useState(false);
+
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
+
+  const [showError, setShowError] = useState(false);
+
 
   const haloAnimatedStyle = {
     opacity: haloAnim,
@@ -77,15 +87,18 @@ export default function App() {
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
+      <TitleComponent />
 
       <View style={styles.topSection}>
-        <View style={styles.content}>
+        <View style={styles.content}>          
           {step === 'landing' && (
-            <Animated.View style={[styles.haloContainer, haloAnimatedStyle]}>
-              <Halo onPress={() => runBeginTransition('name')}>
-                <Text style={styles.beginText}>let's pray 🙏🏽</Text>
-              </Halo>
-            </Animated.View>
+            <View style={styles.haloContainer}>
+              <Animated.View style={haloAnimatedStyle}>
+                <Halo onPress={() => runBeginTransition('name')}>
+                  <Text style={styles.beginText}>start</Text>
+                </Halo>
+              </Animated.View>
+            </View>
           )}
 
           {step === 'name' && (
@@ -99,21 +112,24 @@ export default function App() {
           )}
           {step === 'prayer' && (
             <PrayerStep
-              onNext={(prayer) => {
-                setPrayerText(prayer);
-
-                submitPrayer({
-                  user_name: userName,
-                  text: prayer,
-                }).catch(() => {
-                  // TODO
-                });
-
-                setStep('submitted');
+              onNext={async (prayer) => {
+                setLoading(true); // show modal
+                try {
+                  await submitPrayer({
+                    user_name: userName,
+                    text: prayer,
+                  });
+                  setPrayerText(prayer);
+                  setStep('submitted');
+                } catch (err) {
+                  setShowError(true);
+                } finally {
+                  setLoading(false); // hide modal
+                }
               }}
+              onBack={() => setStep('name')}
             />
           )}
-
 
           {step === 'submitted' && (
             <SubmittedStep onNext={() => setStep('intercession')} />
@@ -135,7 +151,15 @@ export default function App() {
           </Animated.View>
         )}
       </View>
+      <ErrorModal
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+        message='there was an issue sending your prayer request...please try again in a bit'
+      />
+
+      <LoadingModal visible={loading} message="saving your prayer..." />
     </View>
+
   );
 }
 
@@ -147,7 +171,7 @@ const styles = StyleSheet.create({
 
   beginText: {
     color: '#e5e7eb',
-    fontSize: 35,
+    fontSize: 22,
     letterSpacing: 8
   },
 
