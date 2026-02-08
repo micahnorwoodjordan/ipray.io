@@ -26,6 +26,7 @@ class Prayer(models.Model):
     attempt_count = models.PositiveIntegerField(default=0)
     is_public = models.BooleanField(default=False, help_text="Whether the user has granted permission for this prayer to be shared publicly")
     user_email = models.EmailField(null=True, blank=True, help_text="Optional email address for users who wish to receive updates when their prayer is fulfilled.")
+    is_approved = models.BooleanField(default=False, help_text="Whether this prayer has been reviewed and approved for public sharing.")
 
     class Meta:
         indexes = [
