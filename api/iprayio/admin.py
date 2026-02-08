@@ -9,6 +9,7 @@ class PrayerAdmin(admin.ModelAdmin):
         'user_name',
         'user_email',
         'is_public',
+        'is_approved',
         'created_at',
         'fulfilled_at',
         'next_allowed_at',
