@@ -10,12 +10,16 @@ import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import { submitPrayer } from './services/api/prayers';
+
 import ErrorModal from './components/modals/ErrorModal';
+import LoadingModal from './components/modals/LoadingModal';
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
+
+  const [loading, setLoading] = useState(false);
 
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
@@ -104,8 +108,9 @@ export default function App() {
           {step === 'prayer' && (
             <PrayerStep
               onNext={async (prayer) => {
+                setLoading(true); // show modal
                 try {
-                  const res = await submitPrayer({
+                  await submitPrayer({
                     user_name: userName,
                     text: prayer,
                   });
@@ -113,13 +118,13 @@ export default function App() {
                   setStep('submitted');
                 } catch (err) {
                   setShowError(true);
+                } finally {
+                  setLoading(false); // hide modal
                 }
               }}
               onBack={() => setStep('name')}
             />
           )}
-
-
 
           {step === 'submitted' && (
             <SubmittedStep onNext={() => setStep('intercession')} />
@@ -146,6 +151,8 @@ export default function App() {
         onDismiss={() => setShowError(false)}
         message='there was an issue sending your prayer request...please try again in a bit'
       />
+
+      <LoadingModal visible={loading} message="saving your prayer..." />
     </View>
 
   );
