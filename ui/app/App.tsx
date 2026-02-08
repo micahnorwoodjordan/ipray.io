@@ -144,7 +144,7 @@ export default function App() {
       <ErrorModal
         visible={showError}
         onDismiss={() => setShowError(false)}
-        message='an error occurred submitting your prayer request...try again in a bit'
+        message='there was an issue sending your prayer request...please try again in a bit'
       />
     </View>
 
