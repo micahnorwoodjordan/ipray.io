@@ -10,6 +10,7 @@ import PrayerStep from './components/steps/PrayerStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import { submitPrayer } from './services/api/prayers';
+import ErrorModal from './components/modals/ErrorModal';
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
@@ -18,6 +19,9 @@ export default function App() {
 
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
+
+  const [showError, setShowError] = useState(false);
+
 
   const haloAnimatedStyle = {
     opacity: haloAnim,
@@ -99,21 +103,22 @@ export default function App() {
           )}
           {step === 'prayer' && (
             <PrayerStep
-              onNext={(prayer) => {
-                setPrayerText(prayer);
-
-                submitPrayer({
-                  user_name: userName,
-                  text: prayer,
-                }).catch(() => {
-                  // TODO
-                });
-
-                setStep('submitted');
+              onNext={async (prayer) => {
+                try {
+                  const res = await submitPrayer({
+                    user_name: userName,
+                    text: prayer,
+                  });
+                  setPrayerText(prayer);
+                  setStep('submitted');
+                } catch (err) {
+                  setShowError(true);
+                }
               }}
               onBack={() => setStep('name')}
             />
           )}
+
 
 
           {step === 'submitted' && (
@@ -136,7 +141,13 @@ export default function App() {
           </Animated.View>
         )}
       </View>
+      <ErrorModal
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+        message='an error occurred submitting your prayer request...try again in a bit'
+      />
     </View>
+
   );
 }
 
