@@ -9,6 +9,7 @@ import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import ConsentStep from './components/steps/ConsentStep';
 import SubmittedStep from './components/steps/SubmittedStep';
+import EmailStep from './components/steps/EmailStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
 import FooterComponent from './components/FooterComponent';
@@ -19,11 +20,12 @@ import ErrorModal from './components/modals/ErrorModal';
 import LoadingModal from './components/modals/LoadingModal';
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'consent' | 'submitted' | 'intercession'>('landing');
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'consent' | 'submitted' | 'email' | 'intercession'>('landing');
 
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
   const [permissionToShare, setPermissionToShare] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>('');
 
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -116,9 +118,18 @@ export default function App() {
             <PrayerStep
               onNext={(prayer) => {
                 setPrayerText(prayer);
-                setStep('consent');
+                setStep('email');
               }}
               onBack={() => setStep('name')}
+            />
+          )}
+
+          {step === 'email' && (
+            <EmailStep
+              email={email}
+              onChangeEmail={setEmail}
+              onNext={() => setStep('consent')}
+              onBack={() => setStep('prayer')}
             />
           )}
 
@@ -144,10 +155,6 @@ export default function App() {
                 }
               }}
             />
-          )}
-
-          {step === 'submitted' && (
-            <SubmittedStep onNext={() => setStep('intercession')} />
           )}
 
           {step === 'intercession' && (
