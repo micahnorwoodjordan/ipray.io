@@ -67,7 +67,6 @@ const styles = StyleSheet.create<Record<string, Style>>({
     transform: [{ scale: 0.98 }],
   },
 
-  /* Neutral */
   primary: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
@@ -84,21 +83,19 @@ const styles = StyleSheet.create<Record<string, Style>>({
     fontWeight: '600',
   },
 
-  /* Safe / Private */
   safe: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)', // emerald, softened
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
   },
   safeLabel: {
     color: '#a7f3d0',
     fontWeight: '600',
   },
 
-  /* Caution / Share */
   caution: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)', // red, softened
+    backgroundColor: '#d97706',
   },
   cautionLabel: {
-    color: '#fecaca',
+    color: '#a7f3d0',
     fontWeight: '600',
   },
 });
