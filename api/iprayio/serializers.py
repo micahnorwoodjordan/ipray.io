@@ -5,7 +5,7 @@ from .models import Prayer
 class PrayerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prayer
-        fields = ["text", 'user_name']
+        fields = ["text", 'user_name', 'is_public']
         extra_kwargs = {
             "text": {
                 "required": True,
@@ -15,6 +15,9 @@ class PrayerCreateSerializer(serializers.ModelSerializer):
             'user_name': {
                 "required": False,
                 "allow_blank": True
+            },
+            'is_public': {
+                "required": True,
             }
         }
 
