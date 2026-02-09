@@ -11,9 +11,8 @@ export default function ConsentStep({ onDecide }: Props) {
     return (
         <View style={styles.container}>
             <View style={styles.content}>
-                <Text style={styles.title}>sharing this prayer</Text>
-                <Text style={styles.body}>Some prayers are private, but others can edify the Church when shared.</Text>
-                <Text style={styles.body}>Would you like this prayer to be visible to other saints?</Text>
+                <Text style={styles.title}>Some prayers are private, but others can edify the Church when shared</Text>
+                <Text style={styles.body}>choose whether to make this prayer visible to the other saints to submit your prayer request</Text>
             </View>
 
             <View style={styles.actions}>
