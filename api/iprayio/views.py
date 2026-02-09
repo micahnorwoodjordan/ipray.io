@@ -45,6 +45,9 @@ class PrayerCreateView(APIView):
 
         ip_address = get_client_ip(request)
         text = serializer.validated_data["text"]
+        is_public = serializer.validated_data["is_public"]
+        user_name = serializer.validated_data.get('user_name') or 'Anonymous'
+        user_email = serializer.validated_data.get('user_email')
         content_hash = hashlib.sha256(" ".join(text.split()).encode("utf-8")).hexdigest()
 
         if is_rate_limited(ip_address, content_hash):
@@ -55,7 +58,9 @@ class PrayerCreateView(APIView):
             content_hash=content_hash,
             user_ip_address=ip_address,
             next_allowed_at=now() + timedelta(minutes=settings.RATE_LIMIT_MINUTES),
-            user_name=serializer.validated_data.get('user_name') or 'Anonymous'
+            user_name=user_name,
+            user_email=user_email,
+            is_public=is_public
         )
 
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)

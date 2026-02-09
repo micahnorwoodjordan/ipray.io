@@ -6,10 +6,12 @@ from .models import Prayer
 class PrayerAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'user_name',
+        'user_email',
+        'is_public',
+        'is_approved',
         'created_at',
         'fulfilled_at',
-        'content_hash',
-        'user_ip_address',
         'next_allowed_at',
     )
 

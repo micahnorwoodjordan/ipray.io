@@ -55,7 +55,7 @@ export default function PrayerStep({ onNext, onBack }: Props) {
           textAlignVertical="top"
           selectionColor="#fff"
         />
-        <Text style={styles.hint}>Swipe left to submit your prayer request</Text>
+        <Text style={styles.hint}>swipe to the left to continue</Text>
       </View>
 
       <WarningModal
