@@ -1,6 +1,7 @@
 export type PrayerSubmissionRequest = {
   user_name?: string;
   text: string;
+  is_public: boolean;
 };
 
 export type PrayerSubmissionResponse = {

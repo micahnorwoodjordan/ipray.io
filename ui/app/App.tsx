@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, Button, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { useIdlePulse } from './animations/pulse';
@@ -7,6 +7,7 @@ import { useIdlePulse } from './animations/pulse';
 import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
+import ConsentStep from './components/steps/ConsentStep';
 import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
@@ -18,29 +19,29 @@ import ErrorModal from './components/modals/ErrorModal';
 import LoadingModal from './components/modals/LoadingModal';
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'submitted' | 'intercession'>('landing');
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'consent' | 'submitted' | 'intercession'>('landing');
+
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
+  const [permissionToShare, setPermissionToShare] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
-
-  const [showError, setShowError] = useState(false);
-
 
   const haloAnimatedStyle = {
     opacity: haloAnim,
     transform: [
       {
-        scale: haloAnim.interpolate({  // ripple transition
+        scale: haloAnim.interpolate({
           inputRange: [0, 1],
           outputRange: [1.4, 1],
         }),
       },
       {
-        scale: haloPulse.interpolate({  // pulse effect
+        scale: haloPulse.interpolate({
           inputRange: [0, 1],
           outputRange: [1, 1.05],
         }),
@@ -48,20 +49,19 @@ export default function App() {
     ],
   };
 
-
   const scriptureAnimatedStyle = {
     opacity: haloAnim,
     transform: [
       {
         translateY: haloAnim.interpolate({
           inputRange: [0, 1],
-          outputRange: [-12, 0], // subtle upward release
+          outputRange: [-12, 0],
         }),
       },
     ],
   };
 
-  const transitionToNameStepanimation = Animated.timing(haloAnim, {
+  const transitionToNameStepAnimation = Animated.timing(haloAnim, {
     toValue: 0,
     duration: 750,
     easing: Easing.out(Easing.quad),
@@ -69,7 +69,7 @@ export default function App() {
   });
 
   const runBeginTransition = (nextStep: typeof step) => {
-    transitionToNameStepanimation.start(() => {
+    transitionToNameStepAnimation.start(() => {
       setStep(nextStep);
     });
   };
@@ -91,7 +91,7 @@ export default function App() {
       <TitleComponent />
 
       <View style={styles.topSection}>
-        <View style={styles.content}>          
+        <View style={styles.content}>
           {step === 'landing' && (
             <View style={styles.haloContainer}>
               <Animated.View style={haloAnimatedStyle}>
@@ -111,24 +111,38 @@ export default function App() {
               onBack={() => setStep('landing')}
             />
           )}
+
           {step === 'prayer' && (
             <PrayerStep
-              onNext={async (prayer) => {
-                setLoading(true); // show modal
+              onNext={(prayer) => {
+                setPrayerText(prayer);
+                setStep('consent');
+              }}
+              onBack={() => setStep('name')}
+            />
+          )}
+
+          {step === 'consent' && (
+            <ConsentStep
+              onDecide={async (permission) => {
+                setPermissionToShare(permission);
+                setLoading(true);
+
                 try {
                   await submitPrayer({
                     user_name: userName,
-                    text: prayer,
+                    text: prayerText,
+                    is_public: permission,
                   });
-                  setPrayerText(prayer);
+
                   setStep('submitted');
                 } catch (err) {
                   setShowError(true);
+                  setStep('prayer');
                 } finally {
-                  setLoading(false); // hide modal
+                  setLoading(false);
                 }
               }}
-              onBack={() => setStep('name')}
             />
           )}
 
@@ -136,7 +150,9 @@ export default function App() {
             <SubmittedStep onNext={() => setStep('intercession')} />
           )}
 
-          {step === 'intercession' && <IntercessionStep onComplete={() => setStep('landing')} />}
+          {step === 'intercession' && (
+            <IntercessionStep onComplete={() => setStep('landing')} />
+          )}
         </View>
       </View>
 
@@ -152,16 +168,17 @@ export default function App() {
           </Animated.View>
         )}
       </View>
+
       <FooterComponent />
+
       <ErrorModal
         visible={showError}
         onDismiss={() => setShowError(false)}
-        message='there was an issue sending your prayer request...please try again in a bit'
+        message="there was an issue sending your prayer request...please try again in a bit"
       />
 
       <LoadingModal visible={loading} message="saving your prayer..." />
     </View>
-
   );
 }
 
@@ -174,7 +191,7 @@ const styles = StyleSheet.create({
   beginText: {
     color: '#e5e7eb',
     fontSize: 35,
-    letterSpacing: 8
+    letterSpacing: 8,
   },
 
   root: {
@@ -182,7 +199,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#111827',
   },
 
-  /* Vertical quarters logic */
   topSection: {
     flex: 3,
     justifyContent: 'center',
@@ -200,22 +216,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
-    width: "85%"
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#e5e7eb',
-    marginBottom: 12,
-  },
-
-  divider: {
-    width: 72,
-    height: 1,
-    backgroundColor: '#d1d5db',
-    opacity: 0.6,
-    marginBottom: 16,
+    width: '85%',
   },
 
   scripture: {
@@ -226,12 +227,4 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     marginBottom: 12,
   },
-
-  footer: {
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: '#6b7280',
-  },
 });
-
