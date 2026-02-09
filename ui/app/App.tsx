@@ -9,6 +9,7 @@ import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
 import EmailStep from './components/steps/EmailStep';
 import ConsentStep from './components/steps/ConsentStep';
+import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
 import FooterComponent from './components/FooterComponent';
@@ -149,12 +150,16 @@ export default function App() {
                   setStep('submitted');
                 } catch (err) {
                   setShowError(true);
-                  setStep('prayer');
+                  setStep('consent');
                 } finally {
                   setLoading(false);
                 }
               }}
             />
+          )}
+
+          {step === 'submitted' && (
+            <SubmittedStep onNext={() => setStep('intercession')} />
           )}
 
           {step === 'intercession' && (
