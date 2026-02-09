@@ -7,9 +7,8 @@ import { useIdlePulse } from './animations/pulse';
 import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
 import PrayerStep from './components/steps/PrayerStep';
-import ConsentStep from './components/steps/ConsentStep';
-import SubmittedStep from './components/steps/SubmittedStep';
 import EmailStep from './components/steps/EmailStep';
+import ConsentStep from './components/steps/ConsentStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
 import FooterComponent from './components/FooterComponent';
@@ -20,12 +19,12 @@ import ErrorModal from './components/modals/ErrorModal';
 import LoadingModal from './components/modals/LoadingModal';
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'consent' | 'submitted' | 'email' | 'intercession'>('landing');
+  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession'>('landing');
 
   const [userName, setUserName] = useState<string>('');
   const [prayerText, setPrayerText] = useState<string>('');
-  const [permissionToShare, setPermissionToShare] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
+  const [permissionToShare, setPermissionToShare] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -143,6 +142,7 @@ export default function App() {
                   await submitPrayer({
                     user_name: userName,
                     text: prayerText,
+                    user_email: email,
                     is_public: permission,
                   });
 
