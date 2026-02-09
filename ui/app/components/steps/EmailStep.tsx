@@ -1,33 +1,52 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions, Platform, Animated } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
+import WarningModal from '../modals/WarningModal';
 
 type Props = {
     email: string;
     onChangeEmail: (value: string) => void;
-    onNext?: () => void;
-    onBack?: () => void;
+    onNext: () => void;
+    onBack: () => void;
 };
 
 export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Props) {
-    const [localEmail, setLocalEmail] = useState(email || '');
-    const emailRef = useRef(localEmail);
-
+    const [localEmail, setLocalEmail] = useState(email);
+    const [showWarning, setShowWarning] = useState(false);
     const opacity = useRef(new Animated.Value(0)).current;
 
-    // fade in on mount
+    // ref to always get the latest email value in handleNext
+    const emailRef = useRef(localEmail);
+    useEffect(() => {
+        emailRef.current = localEmail;
+    }, [localEmail]);
+
     useEffect(() => {
         Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
     }, []);
 
-    const handleSubmit = () => {
-        onChangeEmail(emailRef.current);
-        onNext?.();
+    const isValidEmail = (value: string) => {
+        const trimmed = value.trim();
+        if (trimmed === '') return true;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(trimmed.toLowerCase());
+    };
+
+    const handleNext = () => {
+        const sanitized = emailRef.current.trim().toLowerCase();
+
+        if (!isValidEmail(sanitized)) {
+            setShowWarning(true);
+            return; 
+        }
+
+        onChangeEmail(sanitized);
+        onNext();
     };
 
     const { panResponder, translateX } = useSwipe({
-        onLeftSwipe: handleSubmit,
+        onLeftSwipe: handleNext,
         onRightSwipe: onBack,
     });
 
@@ -37,7 +56,6 @@ export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Prop
             style={[styles.container, { opacity, transform: [{ translateX }] }]}
         >
             <View style={{ flex: 0.25 }} />
-
             <View style={styles.centerContent}>
                 <Text style={styles.title}>email updates (optional)</Text>
                 <Text style={styles.description}>
@@ -46,10 +64,7 @@ export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Prop
 
                 <TextInput
                     value={localEmail}
-                    onChangeText={(text) => {
-                        setLocalEmail(text);
-                        emailRef.current = text;
-                    }}
+                    onChangeText={setLocalEmail}
                     placeholder="you@example.com"
                     placeholderTextColor="rgba(255,255,255,0.4)"
                     keyboardType="email-address"
@@ -58,19 +73,19 @@ export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Prop
                     style={styles.input}
                 />
 
-                <Text style={styles.hint}>swipe to the left to continue</Text>
+                <Text style={styles.hint}>swipe left to continue, right to go back</Text>
             </View>
+
+            <WarningModal
+                visible={showWarning}
+                message="please enter a valid email address"
+                onDismiss={() => setShowWarning(false)}
+            />
         </Animated.View>
     );
 }
 
-const { width, height: windowHeight } = Dimensions.get('window');
-
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const INPUT_WIDTH = isMobileWeb ? width * 0.85 : isWeb ? width * 0.5 : 400;
-const INPUT_HEIGHT = 50;
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
@@ -78,7 +93,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: SPACING.lg,
-        minHeight: isWeb ? windowHeight : undefined,
+        minHeight: Platform.OS === 'web' ? 600 : undefined,
         backgroundColor: 'transparent',
     },
     centerContent: {
@@ -99,13 +114,15 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.75)',
     },
     input: {
-        width: INPUT_WIDTH,
-        height: INPUT_HEIGHT,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 16,
+        width: Math.min(width - SPACING.xl * 2, 420),
+        alignSelf: 'center',
+        paddingVertical: Platform.OS === 'web' ? SPACING.sm : SPACING.md,
         paddingHorizontal: SPACING.md,
-        fontSize: 16,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
         color: '#fff',
+        fontSize: 16,
         textAlign: 'center',
     },
     hint: {
