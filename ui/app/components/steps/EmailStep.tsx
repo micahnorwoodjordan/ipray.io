@@ -1,47 +1,45 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Dimensions, Platform, Animated } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 import WarningModal from '../modals/WarningModal';
 
 type Props = {
-    email: string;
-    onChangeEmail: (value: string) => void;
+    value: string;
+    onChange: (value: string) => void;
     onNext: () => void;
     onBack: () => void;
 };
 
-export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Props) {
-    const [localEmail, setLocalEmail] = useState(email);
-    const [showWarning, setShowWarning] = useState(false);
+export default function EmailStep({ value, onChange, onNext, onBack }: Props) {
     const opacity = useRef(new Animated.Value(0)).current;
+    const [showWarning, setShowWarning] = useState(false);
 
-    // ref to always get the latest email value in handleNext
-    const emailRef = useRef(localEmail);
+    const valueRef = useRef(value);
     useEffect(() => {
-        emailRef.current = localEmail;
-    }, [localEmail]);
+        valueRef.current = value;
+    }, [value]);
 
     useEffect(() => {
-        Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+        Animated.timing(opacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+        }).start();
     }, []);
 
-    const isValidEmail = (value: string) => {
-        const trimmed = value.trim();
+    const isValidEmail = (raw: string) => {
+        const trimmed = raw.trim();
         if (trimmed === '') return true;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(trimmed.toLowerCase());
     };
 
     const handleNext = () => {
-        const sanitized = emailRef.current.trim().toLowerCase();
-
-        if (!isValidEmail(sanitized)) {
+        if (!isValidEmail(valueRef.current)) {
             setShowWarning(true);
-            return; 
+            return;
         }
-
-        onChangeEmail(sanitized);
         onNext();
     };
 
@@ -58,19 +56,18 @@ export default function EmailStep({ email, onChangeEmail, onNext, onBack }: Prop
             <View style={{ flex: 0.25 }} />
             <View style={styles.centerContent}>
                 <Text style={styles.title}>email updates (optional)</Text>
-                <Text style={styles.description}>
-                    if you want, you can leave your email to get notified after i pray over your request
-                </Text>
+                <Text style={styles.description}>if you want, you can leave your email to get notified after i pray over your request</Text>
 
                 <TextInput
-                    value={localEmail}
-                    onChangeText={setLocalEmail}
+                    value={value}
+                    onChangeText={onChange}
                     placeholder="you@example.com"
                     placeholderTextColor="rgba(255,255,255,0.4)"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
                     style={styles.input}
+                    textAlign="center"
                 />
 
                 <Text style={styles.hint}>swipe left to continue, right to go back</Text>

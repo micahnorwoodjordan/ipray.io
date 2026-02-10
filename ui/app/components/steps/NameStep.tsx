@@ -1,26 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Animated, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 
 type Props = {
-  onNext: (name: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onNext: () => void;
   onBack?: () => void;
 };
 
-export default function NameStep({ onNext, onBack }: Props) {
-  const [name, setName] = useState('');
-  const nameRef = useRef('');
+export default function NameStep({ value, onChange, onNext, onBack }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
 
   const { panResponder, translateX } = useSwipe({
-    onLeftSwipe: () => onNext(nameRef.current),
+    onLeftSwipe: onNext,
     onRightSwipe: onBack,
   });
 
   // fade in on mount
   useEffect(() => {
-    Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   return (
@@ -35,11 +39,8 @@ export default function NameStep({ onNext, onBack }: Props) {
           style={styles.input}
           placeholder="name"
           placeholderTextColor="rgba(255,255,255,0.6)"
-          value={name}
-          onChangeText={(text) => {
-            setName(text);
-            nameRef.current = text;
-          }}
+          value={value}
+          onChangeText={onChange}
           autoCapitalize="words"
           textAlign="center"
           selectionColor="#fff"
