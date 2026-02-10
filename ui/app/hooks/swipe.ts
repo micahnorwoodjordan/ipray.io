@@ -10,7 +10,7 @@ type SwipeCallbacks = {
 export function useSwipe({
   onLeftSwipe,
   onRightSwipe,
-  swipeThreshold = 50,
+  swipeThreshold = 25,
 }: SwipeCallbacks) {
   const translateX = useRef(new Animated.Value(0)).current;
 
