@@ -153,6 +153,7 @@ export default function App() {
                   setLoading(false);
                 }
               }}
+              onBack={() => setStep('email')}
             />
           )}
 

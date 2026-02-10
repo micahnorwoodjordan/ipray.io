@@ -6,12 +6,12 @@ import { Animated, Dimensions, PanResponder } from 'react-native';
 // but this abstraction works
 
 type SwipeCallbacks = {
-  onLeftSwipe: () => void;
+  onLeftSwipe?: () => void;
   onRightSwipe?: () => void;
-  swipeThreshold?: number; // optional, default = 100
+  swipeThreshold?: number;
 };
 
-export function useSwipe({ onLeftSwipe, onRightSwipe, swipeThreshold = 100 }: SwipeCallbacks) {
+export function useSwipe({ onLeftSwipe, onRightSwipe, swipeThreshold = 50 }: SwipeCallbacks) {
   const translateX = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
@@ -23,7 +23,7 @@ export function useSwipe({ onLeftSwipe, onRightSwipe, swipeThreshold = 100 }: Sw
       onPanResponderRelease: (_, gestureState) => {
         const screenWidth = Dimensions.get('window').width;
 
-        if (gestureState.dx < -swipeThreshold) {
+        if (gestureState.dx < -swipeThreshold && onLeftSwipe) {
           // left swipe
           Animated.timing(translateX, { toValue: -screenWidth, duration: 200, useNativeDriver: true }).start(() => {
             onLeftSwipe();

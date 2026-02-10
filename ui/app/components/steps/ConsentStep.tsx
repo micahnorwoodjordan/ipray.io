@@ -1,15 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, Animated, Platform } from 'react-native';
 import { SPACING } from '../../themes/spacing';
+import { useSwipe } from '../../hooks/swipe';
 import SoftButton from '../SoftButton';
 
 type Props = {
   onDecide: (permissionToShare: boolean) => void;
+  onBack: () => void;
 };
 
-export default function ConsentStep({ onDecide }: Props) {
+export default function ConsentStep({ onDecide, onBack }: Props) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  // intentionally no left swipe
+  const { panResponder, translateX } = useSwipe({
+    onRightSwipe: onBack,
+  });
+
   return (
-    <View style={styles.container}>
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        styles.container,
+        { opacity, transform: [{ translateX }] },
+      ]}
+    >
       <View style={styles.content}>
         <Text style={styles.title}>some prayers are private, but others can edify the Church when shared</Text>
         <Text style={styles.body}>sharing lets your prayer be lifted up by others</Text>
@@ -28,8 +51,9 @@ export default function ConsentStep({ onDecide }: Props) {
           onPress={() => onDecide(true)}
           variant="caution"
         />
+        <Text style={styles.hint}>swipe right to go back</Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -41,6 +65,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
     paddingTop: height * 0.18,
     justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+    minHeight: Platform.OS === 'web' ? height : undefined,
   },
 
   content: {
@@ -76,5 +102,13 @@ const styles = StyleSheet.create({
   actions: {
     paddingBottom: SPACING.xl,
     gap: SPACING.md,
+    alignItems: 'center',
+  },
+
+  hint: {
+    marginTop: SPACING.sm,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.45)',
+    textAlign: 'center',
   },
 });
