@@ -19,17 +19,20 @@ import { submitPrayer } from './services/api/prayers';
 import ErrorModal from './components/modals/ErrorModal';
 import LoadingModal from './components/modals/LoadingModal';
 
+type Step = | 'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession';
+
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession'>('landing');
+  const [step, setStep] = useState<Step>('landing');
+  const [userName, setUserName] = useState('');
+  const [prayerText, setPrayerText] = useState('');
+  const [email, setEmail] = useState('');
+  const [permissionToShare, setPermissionToShare] = useState(false);
 
-  const [userName, setUserName] = useState<string>('');
-  const [prayerText, setPrayerText] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [permissionToShare, setPermissionToShare] = useState<boolean>(false);
-
+  // state
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
 
+  // animations
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
 
@@ -63,15 +66,13 @@ export default function App() {
     ],
   };
 
-  const transitionToNameStepAnimation = Animated.timing(haloAnim, {
-    toValue: 0,
-    duration: 750,
-    easing: Easing.out(Easing.quad),
-    useNativeDriver: true,
-  });
-
-  const runBeginTransition = (nextStep: typeof step) => {
-    transitionToNameStepAnimation.start(() => {
+  const transitionToNextStep = (nextStep: Step) => {
+    Animated.timing(haloAnim, {
+      toValue: 0,
+      duration: 750,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => {
       setStep(nextStep);
     });
   };
@@ -97,7 +98,7 @@ export default function App() {
           {step === 'landing' && (
             <View style={styles.haloContainer}>
               <Animated.View style={haloAnimatedStyle}>
-                <Halo onPress={() => runBeginTransition('name')}>
+                <Halo onPress={() => transitionToNextStep('name')}>
                   <Text style={styles.beginText}>start</Text>
                 </Halo>
               </Animated.View>
@@ -106,28 +107,26 @@ export default function App() {
 
           {step === 'name' && (
             <NameStep
-              onNext={(name) => {
-                setUserName(name);
-                setStep('prayer');
-              }}
+              value={userName}
+              onChange={setUserName}
+              onNext={() => setStep('prayer')}
               onBack={() => setStep('landing')}
             />
           )}
 
           {step === 'prayer' && (
             <PrayerStep
-              onNext={(prayer) => {
-                setPrayerText(prayer);
-                setStep('email');
-              }}
+              value={prayerText}
+              onChange={setPrayerText}
+              onNext={() => setStep('email')}
               onBack={() => setStep('name')}
             />
           )}
 
           {step === 'email' && (
             <EmailStep
-              email={email}
-              onChangeEmail={setEmail}
+              value={email}
+              onChange={setEmail}
               onNext={() => setStep('consent')}
               onBack={() => setStep('prayer')}
             />
@@ -150,11 +149,11 @@ export default function App() {
                   setStep('submitted');
                 } catch (err) {
                   setShowError(true);
-                  setStep('consent');
                 } finally {
                   setLoading(false);
                 }
               }}
+              onBack={() => setStep('email')}
             />
           )}
 
@@ -163,21 +162,27 @@ export default function App() {
           )}
 
           {step === 'intercession' && (
-            <IntercessionStep onComplete={() => setStep('landing')} />
+            <IntercessionStep
+              onComplete={() => {  // reset after a full cycle
+                setUserName('');
+                setPrayerText('');
+                setEmail('');
+                setPermissionToShare(false);
+                setStep('landing');
+              }}
+            />
           )}
         </View>
       </View>
 
       <View style={styles.bottomSection}>
         {step === 'landing' && (
-          <Animated.View>
-            <Animated.Text style={[styles.scripture, scriptureAnimatedStyle]}>
-              “Therefore, confess your sins to one another and pray for one another,
-              that you may be healed. The prayer of a righteous person has great power
-              as it is working.”{'\n'}
-              — James 5:16 (ESV)
-            </Animated.Text>
-          </Animated.View>
+          <Animated.Text style={[styles.scripture, scriptureAnimatedStyle]}>
+            “Therefore, confess your sins to one another and pray for one another,
+            that you may be healed. The prayer of a righteous person has great power
+            as it is working.”{'\n'}
+            — James 5:16 (ESV)
+          </Animated.Text>
         )}
       </View>
 
@@ -199,24 +204,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   beginText: {
     color: '#e5e7eb',
     fontSize: 35,
     letterSpacing: 8,
   },
-
   root: {
     flex: 1,
     backgroundColor: '#111827',
   },
-
   topSection: {
     flex: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   bottomSection: {
     flex: 0.5,
     justifyContent: 'space-between',
@@ -224,13 +225,11 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     paddingHorizontal: 24,
   },
-
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
     width: '85%',
   },
-
   scripture: {
     fontSize: 13,
     lineHeight: 18,

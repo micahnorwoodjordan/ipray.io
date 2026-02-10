@@ -1,32 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet, Animated, Text, Platform, Dimensions } from 'react-native';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 import WarningModal from '../modals/WarningModal';
 
 type Props = {
-  onNext: (prayer: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onNext: () => void;
   onBack?: () => void;
 };
 
-export default function PrayerStep({ onNext, onBack }: Props) {
-  const [prayer, setPrayer] = useState('');
-  const prayerRef = useRef('');
+export default function PrayerStep({ value, onChange, onNext, onBack }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
-
   const [showWarning, setShowWarning] = useState(false);
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   // fade in on mount
   useEffect(() => {
-    Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   const handleSubmit = () => {
-    if (!prayerRef.current.trim()) {
+    if (!valueRef.current.trim()) {
       setShowWarning(true);
       return;
     }
-    onNext(prayerRef.current);
+    onNext();
   };
 
   const { panResponder, translateX } = useSwipe({
@@ -46,12 +54,10 @@ export default function PrayerStep({ onNext, onBack }: Props) {
           style={styles.input}
           placeholder="our God hears ✝️"
           placeholderTextColor="rgba(255,255,255,0.6)"
-          value={prayer}
-          onChangeText={(text) => {
-            setPrayer(text);
-            prayerRef.current = text;
-          }}
+          value={value}
+          onChangeText={onChange}
           multiline
+          textAlign="center"
           textAlignVertical="top"
           selectionColor="#fff"
         />
@@ -105,12 +111,6 @@ const styles = StyleSheet.create({
     width: TEXTINPUT_WIDTH,
     textAlign: 'center',
     height: TEXTINPUT_HEIGHT,
-  },
-  note: {
-    marginTop: SPACING.md,
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    textAlign: 'center',
   },
   hint: {
     marginTop: SPACING.lg,
