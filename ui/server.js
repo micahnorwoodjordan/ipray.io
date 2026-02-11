@@ -7,81 +7,66 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "app", "dist");
 
 const PORT = process.env.PORT || 3000;
-const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-if (!EXPO_PUBLIC_API_URL) {
-  console.warn("⚠️  EXPO_PUBLIC_API_URL is not set. /api requests will fail.");
-}
+const MIME_TYPES = {
+  ".html": "text/html",
+  ".css": "text/css",
+  ".js": "application/javascript",
+  ".json": "application/json",
+  ".ico": "image/x-icon",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+};
 
-const server = http.createServer((req, res) => {
-  // -----------------------------
-  // API proxy
-  // -----------------------------
-  if (req.url?.startsWith("/api")) {
-    if (!EXPO_PUBLIC_API_URL) {
-      res.writeHead(500, { "Content-Type": "text/plain" });
-      res.end("EXPO_PUBLIC_API_URL not configured");
-      return;
-    }
-
-    const targetUrl = new URL(req.url, EXPO_PUBLIC_API_URL);
-
-    const proxyReq = http.request(
-      targetUrl,
-      {
-        method: req.method,
-        headers: req.headers,
-      },
-      (proxyRes) => {
-        res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-        proxyRes.pipe(res, { end: true });
-      }
-    );
-
-    proxyReq.on("error", (err) => {
-      console.error("API proxy error:", err);
-      res.writeHead(502, { "Content-Type": "text/plain" });
-      res.end("Bad gateway");
-    });
-
-    req.pipe(proxyReq, { end: true });
-    return;
-  }
-
-  // -----------------------------
-  // Static file serving
-  // -----------------------------
-  let filePath = req.url === "/" ? "/index.html" : req.url;
-  filePath = path.join(distPath, filePath);
-
-  if (req.url === "/favicon.ico") {
-    filePath = path.join(distPath, "favicon.ico");
-  }
+function serveFile(filePath, res) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || "application/octet-stream";
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      console.log(`could not find file: ${path.parse(filePath).base}`);
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("Not found");
+      res.writeHead(500, { "Content-Type": "text/plain" });
+      res.end("Server error");
       return;
     }
-
-    const ext = path.extname(filePath);
-    const contentType =
-      ext === ".html" ? "text/html" :
-      ext === ".css" ? "text/css" :
-      ext === ".ico" ? "image/x-icon" :
-      ext === ".js" ? "application/javascript" :
-      "text/plain";
 
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
   });
+}
+
+const server = http.createServer((req, res) => {
+  if (!req.url) {
+    res.writeHead(400);
+    res.end("Bad request");
+    return;
+  }
+
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = decodeURIComponent(parsedUrl.pathname);
+  const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, "");  // prevent path traversal
+  let filePath = path.join(distPath, safePath);
+
+  if (pathname === "/") {
+    filePath = path.join(distPath, "index.html");
+  }
+
+  fs.stat(filePath, (err, stats) => {
+    if (!err && stats.isFile()) {
+      serveFile(filePath, res);
+      return;
+    }
+
+    // SPA fallback
+    const indexPath = path.join(distPath, "index.html");
+    serveFile(indexPath, res);
+  });
 });
 
 server.listen(PORT, () => {
-  console.log(`Static server running on port ${PORT}`);
-  if (EXPO_PUBLIC_API_URL) {
-    console.log(`Proxying /api → ${EXPO_PUBLIC_API_URL}/api`);
-  }
+  console.log("server running");
 });
