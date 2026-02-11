@@ -43,9 +43,9 @@ const buttonWidth = isMobileWeb
     : 400;              // native
 
 const buttonHeight = isMobileWeb
-  ? width * 0.2       // mobile web
+  ? height * 0.15       // mobile web
   : isWeb
-    ? width * 0.05       // desktop web
+    ? height * 0.1       // desktop web
     : 200;              // native
 
 type Style = ViewStyle | TextStyle;

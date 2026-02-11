@@ -26,33 +26,33 @@ export default function ConsentStep({ onDecide, onBack }: Props) {
   });
 
   return (
-    <Animated.View
-      {...panResponder.panHandlers}
-      style={[
-        styles.container,
-        { opacity, transform: [{ translateX }] },
-      ]}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>some prayers are private, but others can edify the Church when shared</Text>
-        <Text style={styles.body}>sharing lets your prayer be lifted up by others</Text>
-        <Text style={styles.prompt}>which would you prefer?</Text>
-      </View>
+    <Animated.View style={[styles.container, { opacity }]}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={{ transform: [{ translateX }] }}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>some prayers are private, but others can edify the Church when shared</Text>
+          <Text style={styles.body}>sharing lets your prayer be lifted up by others</Text>
+          <Text style={styles.prompt}>which would you prefer?</Text>
+        </View>
 
-      <View style={styles.actions}>
-        <SoftButton
-          label="i want to keep this private"
-          onPress={() => onDecide(false)}
-          variant="safe"
-        />
+        <View style={styles.actions}>
+          <SoftButton
+            label="i want to keep this private"
+            onPress={() => onDecide(false)}
+            variant="safe"
+          />
 
-        <SoftButton
-          label="i want this to be shared with the saints"
-          onPress={() => onDecide(true)}
-          variant="caution"
-        />
-        <Text style={styles.hint}>swipe right to go back</Text>
-      </View>
+          <SoftButton
+            label="i want this to be shared with the saints"
+            onPress={() => onDecide(true)}
+            variant="caution"
+          />
+
+          <Text style={styles.hint}>swipe right to go back</Text>
+        </View>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: SPACING.xl,
-    paddingTop: height * 0.18,
+    paddingTop: height * 0.25,
     justifyContent: 'space-between',
     backgroundColor: 'transparent',
     minHeight: Platform.OS === 'web' ? height : undefined,
