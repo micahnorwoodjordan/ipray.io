@@ -53,8 +53,6 @@ class Command(BaseCommand):
                     time.sleep(POLL_INTERVAL_SECONDS)
                     continue
 
-                # self.mark_prayer_complete(prayer)
-
             except KeyboardInterrupt:
                 self.stdout.write(self.style.WARNING("Worker shutting down"))
                 return
@@ -77,7 +75,9 @@ class Command(BaseCommand):
             self.stdout.write(f"Reclaimed {reclaimed} stuck prayer(s)")
 
     def claim_prayer(self) -> Prayer | None:
-        with transaction.atomic():
+        notification_service = NotificationService()
+
+        with transaction.atomic():  # update base fields to denote that prayer has been received and committed to db
             prayer = (
                 Prayer.objects
                 .select_for_update(skip_locked=True)
@@ -89,45 +89,19 @@ class Command(BaseCommand):
             if not prayer:
                 return None
 
-            notification_service = NotificationService()
-            methods = (NotificationMethod.EMAIL, NotificationMethod.SMS)
-            summary = notification_service.notify_admin(methods, prayer)
-
             prayer.prayer_status = Prayer.Status.RECEIVED
             prayer.processing_started_at = timezone.now()
             prayer.processing_by = WORKER_ID
             prayer.attempt_count += 1
-            prayer.email_sent = summary.email_sent
-            prayer.email_error = summary.email_error
-            prayer.sms_sent = summary.sms_sent
-            prayer.sms_error = summary.sms_error
+            prayer.save(update_fields=["prayer_status", "processing_started_at", "processing_by", "attempt_count"])
 
-            prayer.save(
-                update_fields=[
-                    "prayer_status",
-                    "processing_started_at",
-                    "processing_by",
-                    "attempt_count",
-                    'email_sent',
-                    'email_error',
-                    'sms_sent',
-                    'sms_error'
-                ]
-            )
+        methods = (NotificationMethod.EMAIL, NotificationMethod.SMS)
+        summary = notification_service.notify_admin(methods, prayer)
 
-            return prayer
+        prayer.email_sent = summary.email_sent
+        prayer.email_error = summary.email_error
+        prayer.sms_sent = summary.sms_sent
+        prayer.sms_error = summary.sms_error
+        prayer.save(update_fields=['email_sent', 'email_error', 'sms_sent', 'sms_error'])
 
-    # def mark_prayer_complete(self, prayer: Prayer) -> None:
-    #     try:
-    #         prayer.prayer_status = Prayer.Status.COMPLETE
-    #         prayer.fulfilled_at = timezone.now()
-    #         prayer.save(update_fields=["prayer_status", "fulfilled_at"])
-
-    #         self.stdout.write(f"Completed prayer {prayer.id}")
-
-    #     except Exception as e:
-    #         prayer.prayer_status = Prayer.Status.FAILED
-    #         prayer.save(update_fields=["prayer_status"])
-
-    #         self.stderr.write(self.style.ERROR(f"Failed prayer {prayer.id}: {e}"))
-    #         raise
+        return prayer
