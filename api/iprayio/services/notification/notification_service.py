@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from django.conf import settings
 
 from iprayio.models import Prayer
-from .mailgun.mailgun_service import send_prayer_notification_email
+from iprayio.services.notification.mailgun.mailgun_service import send_admin_prayer_submission_notification
 
 
 class NotificationMethod(Enum):
@@ -18,7 +18,6 @@ class NotificationSummary:
     sms_sent: bool
     email_error: str
     sms_error: str
-    
 
 
 class NotificationService:
@@ -33,7 +32,7 @@ class NotificationService:
 
         if NotificationMethod.EMAIL in methods:
             try:
-                send_prayer_notification_email(prayer)
+                send_admin_prayer_submission_notification(prayer)
                 summary.email_sent = True
                 print(f'sent email for prayer {prayer.id}')
             except Exception as e:

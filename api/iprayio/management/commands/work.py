@@ -53,8 +53,6 @@ class Command(BaseCommand):
                     time.sleep(POLL_INTERVAL_SECONDS)
                     continue
 
-                # self.mark_prayer_complete(prayer)
-
             except KeyboardInterrupt:
                 self.stdout.write(self.style.WARNING("Worker shutting down"))
                 return
@@ -107,18 +105,3 @@ class Command(BaseCommand):
         prayer.save(update_fields=['email_sent', 'email_error', 'sms_sent', 'sms_error'])
 
         return prayer
-
-    # def mark_prayer_complete(self, prayer: Prayer) -> None:
-    #     try:
-    #         prayer.prayer_status = Prayer.Status.COMPLETE
-    #         prayer.fulfilled_at = timezone.now()
-    #         prayer.save(update_fields=["prayer_status", "fulfilled_at"])
-
-    #         self.stdout.write(f"Completed prayer {prayer.id}")
-
-    #     except Exception as e:
-    #         prayer.prayer_status = Prayer.Status.FAILED
-    #         prayer.save(update_fields=["prayer_status"])
-
-    #         self.stderr.write(self.style.ERROR(f"Failed prayer {prayer.id}: {e}"))
-    #         raise
