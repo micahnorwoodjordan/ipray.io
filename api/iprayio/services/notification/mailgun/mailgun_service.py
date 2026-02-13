@@ -31,6 +31,7 @@ def send_admin_prayer_submission_notification(prayer: Prayer) -> None:
 
 
 def send_user_prayer_completed_notification(prayer: Prayer) -> None:
-    subject = "ipray.io - Your Prayer Request Has Been Lifted Up"
-    text = f'Hi friend,\nI just prayed over your prayer request:\n\n\n"{prayer.text}"'
+    user_name = prayer.user_name.capitalize() or "Friend"
+    subject = f'ipray.io - {user_name}, Your Prayer Request Has Been Lifted Up'
+    text = f'Hi {user_name},\nI just prayed over your prayer request:\n\n\n"{prayer.text}"'
     _send_email([prayer.user_email], subject, text)
