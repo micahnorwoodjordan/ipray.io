@@ -99,7 +99,7 @@ export default function App() {
             <View style={styles.haloContainer}>
               <Animated.View style={haloAnimatedStyle}>
                 <Halo onPress={() => transitionToNextStep('name')}>
-                  <Text style={styles.beginText}>start</Text>
+                  <Text style={styles.beginText}>request prayer</Text>
                 </Halo>
               </Animated.View>
             </View>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   beginText: {
     color: '#e5e7eb',
-    fontSize: 35,
+    fontSize: 30,
     letterSpacing: 8,
   },
   root: {
