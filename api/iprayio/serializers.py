@@ -30,12 +30,8 @@ class PrayerDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prayer
         fields = [
-            "id",
             "text",
-            "content_hash",
-            "user_ip_address",
             "created_at",
-            "fulfilled_at",
             "next_allowed_at",
         ]
         read_only_fields = fields

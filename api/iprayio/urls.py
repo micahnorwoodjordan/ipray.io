@@ -1,10 +1,10 @@
 from django.urls import path
 
-from .views import PrayerCreateView, PrayerFulfillView, PingView
+from iprayio import views
 
 
 urlpatterns = [
-    path("ping", PingView.as_view(), name="ping"),
-    path("prayers/create", PrayerCreateView.as_view(), name="prayer-create"),
-    path("prayers/<uuid:pk>/fulfill", PrayerFulfillView.as_view(), name="prayer-fulfill"),
+    path("ping", views.ping, name="ping"),
+    path("prayers/create", views.create_prayer_request, name="prayer-create"),
+    path("prayers/<uuid:pk>/complete", views.complete_prayer_request, name="prayer-complete"),
 ]
