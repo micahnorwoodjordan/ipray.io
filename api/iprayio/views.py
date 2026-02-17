@@ -57,7 +57,7 @@ def get_prayer_request(request):
             except Prayer.DoesNotExist:
                 return Response({"detail": "Prayer not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
-            prayers = list(Prayer.objects.all())
+            prayers = list(Prayer.objects.filter(is_public=True, is_approved=True))
             ids = [p.id for p in prayers]
             idx = random.randint(0, len(ids) - 1)
             prayer = prayers[idx]
