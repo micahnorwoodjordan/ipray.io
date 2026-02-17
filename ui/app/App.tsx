@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
 
 import { useIdlePulse } from './animations/pulse';
 import { useBreath } from './animations/breathe';
@@ -15,6 +14,8 @@ import SubmittedStep from './components/steps/SubmittedStep';
 import IntercessionStep from './components/steps/IntercessionStep';
 import TitleComponent from './components/TitleComponent';
 import FooterComponent from './components/FooterComponent';
+
+import AgreementModal from './components/modals/AgreementModal';
 
 import { submitPrayer } from './services/api/prayers';
 
@@ -32,6 +33,7 @@ export default function App() {
 
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [showAgreement, setShowAgreement] = useState(false);
 
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
@@ -42,7 +44,6 @@ export default function App() {
     3000,
     1.1
   );
-
 
   const haloAnimatedStyle = useMemo(
     () => ({
@@ -141,16 +142,9 @@ export default function App() {
                 </Halo>
               </Animated.View>
 
-              <Pressable>
+              <Pressable onPress={() => setShowAgreement(true)}>
                 <Animated.View style={[styles.agreementRow, agreementAnimatedStyle]}>
-                  <Ionicons
-                    name="heart-outline"
-                    size={14}
-                    color="#9ca3af"
-                  />
-                  <Text style={styles.agreementText}>
-                    stand in agreement
-                  </Text>
+                  <Text style={styles.agreementText}>stand in agreement with another 🙏🏽</Text>
                 </Animated.View>
               </Pressable>
             </View>
@@ -239,13 +233,19 @@ export default function App() {
 
       <FooterComponent />
 
+      <AgreementModal
+        visible={showAgreement}
+        onClose={() => setShowAgreement(false)}
+        prayerText="Lord, please strengthen this person in their weakness and draw them nearer to Yourself." // TODO
+      />
+
       <ErrorModal
         visible={showError}
         onDismiss={() => setShowError(false)}
         message="there was an issue sending your prayer request...please try again in a bit"
       />
 
-      <LoadingModal visible={loading} message="saving your prayer..." />
+      <LoadingModal visible={loading} message="saving your prayer..."/>
     </View>
   );
 }
