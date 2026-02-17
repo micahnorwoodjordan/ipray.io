@@ -26,7 +26,7 @@ def _send_email(to: list[str], subject: str, text: str) -> None:
 
 def send_admin_prayer_submission_notification(prayer: Prayer) -> None:
     subject = f"ipray.io - Prayer Request: {prayer.id}"
-    text = ...
+    text = prayer.text
     _send_email([settings.ADMIN_NOTIFICATION_EMAIL], subject, text)
 
 
