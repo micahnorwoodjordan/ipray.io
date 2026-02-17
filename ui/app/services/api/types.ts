@@ -9,3 +9,9 @@ export type PrayerSubmissionResponse = {
   id: string;
   received_at: string;
 };
+
+export type PrayerResponse = {
+  text: string;
+  created_at: string;
+  next_allowed_at: string;
+};

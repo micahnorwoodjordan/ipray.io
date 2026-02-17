@@ -16,13 +16,13 @@ import TitleComponent from './components/TitleComponent';
 import FooterComponent from './components/FooterComponent';
 
 import AgreementModal from './components/modals/AgreementModal';
-
-import { submitPrayer } from './services/api/prayers';
-
 import ErrorModal from './components/modals/ErrorModal';
 import LoadingModal from './components/modals/LoadingModal';
 
-type Step = | 'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession';
+import { submitPrayer, fetchPrayer } from './services/api/prayers';
+import { PrayerResponse } from './services/api/types';
+
+type Step = 'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession';
 
 export default function App() {
   const [step, setStep] = useState<Step>('landing');
@@ -35,15 +35,13 @@ export default function App() {
   const [showError, setShowError] = useState(false);
   const [showAgreement, setShowAgreement] = useState(false);
 
+  const [randomPrayer, setRandomPrayer] = useState<PrayerResponse | null>(null);
+  const [prayerLoaded, setPrayerLoaded] = useState(false);
+
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
   const agreementFade = useRef(new Animated.Value(0)).current;
-
-  const agreementBreath = useBreath(
-    step === 'landing',
-    3000,
-    1.1
-  );
+  const agreementBreath = useBreath(step === 'landing', 3000, 1.1);
 
   const haloAnimatedStyle = useMemo(
     () => ({
@@ -107,6 +105,20 @@ export default function App() {
       setStep(nextStep);
     });
   };
+
+  useEffect(() => {
+    const loadPrayer = async () => {
+      try {
+        const prayer = await fetchPrayer();
+        setRandomPrayer(prayer);
+      } catch (err) {
+        console.warn('Failed to fetch a prayer', err);
+      } finally {
+        setPrayerLoaded(true);
+      }
+    };
+    loadPrayer();
+  }, []);
 
   useEffect(() => {
     if (step === 'landing') {
@@ -233,11 +245,13 @@ export default function App() {
 
       <FooterComponent />
 
-      <AgreementModal
-        visible={showAgreement}
-        onClose={() => setShowAgreement(false)}
-        prayerText="Lord, please strengthen this person in their weakness and draw them nearer to Yourself." // TODO
-      />
+      {prayerLoaded && (
+        <AgreementModal
+          visible={showAgreement}
+          onClose={() => setShowAgreement(false)}
+          prayerText={randomPrayer?.text ?? "i need some help!"}
+        />
+      )}
 
       <ErrorModal
         visible={showError}
@@ -307,6 +321,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     color: '#9ca3af',
-    marginBottom: 12,
+    marginTop: 24,
   },
 });
