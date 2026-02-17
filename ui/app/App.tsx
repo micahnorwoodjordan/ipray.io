@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useIdlePulse } from './animations/pulse';
+import { useBreath } from './animations/breathe';
 
 import Halo from './components/Halo';
 import NameStep from './components/steps/NameStep';
@@ -28,43 +30,71 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [permissionToShare, setPermissionToShare] = useState(false);
 
-  // state
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
 
-  // animations
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
+  const agreementFade = useRef(new Animated.Value(0)).current;
 
-  const haloAnimatedStyle = {
-    opacity: haloAnim,
-    transform: [
-      {
-        scale: haloAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1.4, 1],
-        }),
-      },
-      {
-        scale: haloPulse.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 1.05],
-        }),
-      },
-    ],
-  };
+  const agreementBreath = useBreath(
+    step === 'landing',
+    3000,
+    1.1
+  );
 
-  const scriptureAnimatedStyle = {
-    opacity: haloAnim,
-    transform: [
-      {
-        translateY: haloAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-12, 0],
-        }),
-      },
-    ],
-  };
+
+  const haloAnimatedStyle = useMemo(
+    () => ({
+      opacity: haloAnim,
+      transform: [
+        {
+          scale: haloAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1.4, 1],
+          }),
+        },
+        {
+          scale: haloPulse.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 1.05],
+          }),
+        },
+      ],
+    }),
+    [haloAnim, haloPulse]
+  );
+
+  const scriptureAnimatedStyle = useMemo(
+    () => ({
+      opacity: haloAnim,
+      transform: [
+        {
+          translateY: haloAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-12, 0],
+          }),
+        },
+      ],
+    }),
+    [haloAnim]
+  );
+
+  const agreementAnimatedStyle = useMemo(
+    () => ({
+      opacity: agreementFade,
+      transform: [
+        {
+          translateY: agreementFade.interpolate({
+            inputRange: [0, 1],
+            outputRange: [8, 0],
+          }),
+        },
+        { scale: agreementBreath },
+      ],
+    }),
+    [agreementFade, agreementBreath]
+  );
 
   const transitionToNextStep = (nextStep: Step) => {
     Animated.timing(haloAnim, {
@@ -80,11 +110,19 @@ export default function App() {
   useEffect(() => {
     if (step === 'landing') {
       haloAnim.setValue(0);
+      agreementFade.setValue(0);
+
       Animated.timing(haloAnim, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        Animated.timing(agreementFade, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }).start();
+      });
     }
   }, [step]);
 
@@ -102,6 +140,19 @@ export default function App() {
                   <Text style={styles.beginText}>request prayer</Text>
                 </Halo>
               </Animated.View>
+
+              <Pressable>
+                <Animated.View style={[styles.agreementRow, agreementAnimatedStyle]}>
+                  <Ionicons
+                    name="heart-outline"
+                    size={14}
+                    color="#9ca3af"
+                  />
+                  <Text style={styles.agreementText}>
+                    stand in agreement
+                  </Text>
+                </Animated.View>
+              </Pressable>
             </View>
           )}
 
@@ -147,7 +198,7 @@ export default function App() {
                   });
 
                   setStep('submitted');
-                } catch (err) {
+                } catch {
                   setShowError(true);
                 } finally {
                   setLoading(false);
@@ -163,7 +214,7 @@ export default function App() {
 
           {step === 'intercession' && (
             <IntercessionStep
-              onComplete={() => {  // reset after a full cycle
+              onComplete={() => {
                 setUserName('');
                 setPrayerText('');
                 setEmail('');
@@ -200,24 +251,17 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  haloContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  beginText: {
-    color: '#e5e7eb',
-    fontSize: 30,
-    letterSpacing: 8,
-  },
   root: {
     flex: 1,
     backgroundColor: '#111827',
   },
+
   topSection: {
     flex: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   bottomSection: {
     flex: 0.5,
     justifyContent: 'space-between',
@@ -225,11 +269,38 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     paddingHorizontal: 24,
   },
+
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
     width: '85%',
   },
+
+  haloContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  beginText: {
+    color: '#e5e7eb',
+    fontSize: 30,
+    letterSpacing: 8,
+  },
+
+  agreementRow: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    opacity: 0.65,
+  },
+
+  agreementText: {
+    fontSize: 13,
+    color: '#9ca3af',
+    marginLeft: 6,
+    letterSpacing: 1,
+  },
+
   scripture: {
     fontSize: 13,
     lineHeight: 18,
