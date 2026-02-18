@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Pressable, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { useIdlePulse } from './animations/pulse';
@@ -21,6 +21,7 @@ import LoadingModal from './components/modals/LoadingModal';
 
 import { submitPrayer, fetchPrayer } from './services/api/prayers';
 import { PrayerResponse } from './services/api/types';
+import { ViewportSpec, getViewportSpec } from './utilities/screen';
 
 type Step = 'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession';
 
@@ -264,12 +265,11 @@ export default function App() {
   );
 }
 
-const { width, height } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-const FONT_SIZE = isMobileWeb
+const viewport: ViewportSpec = getViewportSpec();
+
+const FONT_SIZE = viewport.isMobileWeb
   ? 23         // mobile web
-  : isWeb
+  : viewport.isWeb
     ? 30       // desktop web
     : 25;      // native
 

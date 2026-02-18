@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
+
 import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';

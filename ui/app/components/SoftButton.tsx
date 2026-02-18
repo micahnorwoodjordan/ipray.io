@@ -1,5 +1,7 @@
 import React from 'react';
-import { Text, Pressable, StyleSheet, ViewStyle, TextStyle, Platform, Dimensions } from 'react-native';
+import { Text, Pressable, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+
+import { ViewportSpec, getViewportSpec } from '../utilities/screen';
 import { SPACING } from '../themes/spacing';
 
 type Variant = 'primary' | 'secondary' | 'safe' | 'caution';
@@ -31,21 +33,18 @@ export default function SoftButton({
   );
 }
 
-const { width, height } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const buttonWidth = isMobileWeb
-  ? width * 0.9       // mobile web
-  : isWeb
-    ? width * 0.5       // desktop web
+const buttonWidth = viewport.isMobileWeb
+  ? viewport.width * 0.9       // mobile web
+  : viewport.isWeb
+    ? viewport.width * 0.5       // desktop web
     : 400;              // native
 
-const buttonHeight = isMobileWeb
-  ? height * 0.15       // mobile web
-  : isWeb
-    ? height * 0.1       // desktop web
+const buttonHeight = viewport.isMobileWeb
+  ? viewport.height * 0.15       // mobile web
+  : viewport.isWeb
+    ? viewport.height * 0.1       // desktop web
     : 200;              // native
 
 type Style = ViewStyle | TextStyle;
