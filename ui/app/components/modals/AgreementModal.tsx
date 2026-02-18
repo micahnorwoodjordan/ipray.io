@@ -1,13 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  Animated,
-  Easing,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, Modal, Animated, Easing, Pressable } from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -15,11 +7,7 @@ type Props = {
   prayerText: string;
 };
 
-export default function AgreementModal({
-  visible,
-  onClose,
-  prayerText,
-}: Props) {
+export default function AgreementModal({visible, onClose, prayerText}: Props) {
   const translateX = useRef(new Animated.Value(-40)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 

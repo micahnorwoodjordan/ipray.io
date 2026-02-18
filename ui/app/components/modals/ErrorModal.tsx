@@ -1,4 +1,5 @@
 import { Modal, View, Text, StyleSheet, Pressable, Platform, Dimensions } from 'react-native';
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 
 type Props = {
@@ -30,21 +31,18 @@ export default function ErrorModal({ visible, message, onDismiss }: Props) {
     );
 }
 
-const { width, height } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const MODAL_WIDTH = isMobileWeb
-    ? width * 0.90       // mobile web
-    : isWeb
-        ? width * 0.4       // desktop web
+const MODAL_WIDTH = viewport.isMobileWeb
+    ? viewport.width * 0.90       // mobile web
+    : viewport.isWeb
+        ? viewport.width * 0.4       // desktop web
         : '90%';              // native
 
-const MODAL_HEIGHT = isMobileWeb
-    ? height * 0.4       // mobile web
-    : isWeb
-        ? height * 0.3       // desktop web
+const MODAL_HEIGHT = viewport.isMobileWeb
+    ? viewport.height * 0.4       // mobile web
+    : viewport.isWeb
+        ? viewport.height * 0.3       // desktop web
         : '30%';              // native
 
 
