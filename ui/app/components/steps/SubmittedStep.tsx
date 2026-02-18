@@ -1,7 +1,7 @@
-import { Dimensions, Platform } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 
 type Props = {
@@ -32,7 +32,6 @@ export default function SubmittedStep({ onNext }: Props) {
   return (
     <View style={styles.container}>
       <View style={{ flex: 0.6 }} />
-
       <Animated.View style={[styles.content, { opacity }]}>
         <View>
           <Animated.Text
@@ -50,33 +49,22 @@ export default function SubmittedStep({ onNext }: Props) {
           </Animated.Text>
 
           <View style={{ height: SPACING.lg }} />
-
           <View style={styles.content}>
-            <Text style={styles.scripture}>
-              “But know that the LORD has set apart the godly for himself;
-            </Text>
-            <Text style={styles.scripture}>
-              the LORD hears when I call to him.”
-            </Text>
-
+            <Text style={styles.scripture}>“But know that the LORD has set apart the godly for himself;</Text>
+            <Text style={styles.scripture}>the LORD hears when I call to him.”</Text>
             <Text style={styles.reference}>— Psalm 4:3</Text>
-
             <View style={{ height: SPACING.xl }} />
-
-            <Text style={styles.reminder}>
-              you don’t need to carry this anymore
-            </Text>
+            <Text style={styles.reminder}>you don’t need to carry this anymore</Text>
           </View>
         </View>
       </Animated.View>
-
       <View style={{ flex: 0.4 }} />
     </View>
   );
 }
 
 
-const { height: windowHeight } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
 const styles = StyleSheet.create({
   confirmation: {
@@ -93,7 +81,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    minHeight: Platform.OS === 'web' ? windowHeight : undefined,
+    minHeight: viewport.isWeb ? viewport.height : undefined,
   },
 
   content: {

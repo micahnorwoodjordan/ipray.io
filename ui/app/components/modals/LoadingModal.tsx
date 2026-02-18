@@ -1,4 +1,3 @@
-// components/modals/LoadingModal.tsx
 import React from 'react';
 import { View, Modal, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { SPACING } from '../../themes/spacing';
@@ -34,14 +33,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    padding: SPACING.lg,           // replaced hardcoded padding
+    padding: SPACING.lg,
     backgroundColor: '#222',
-    borderRadius: SPACING.md,      // nice rounded corners
+    borderRadius: SPACING.md,
     minWidth: 200,
     alignItems: 'center',
   },
   text: {
-    marginTop: SPACING.sm,         // spacing between spinner and text
+    marginTop: SPACING.sm,
     color: '#ffffff',
     fontSize: 16,
     textAlign: 'center',

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
+
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 
 type Props = { onComplete: (name: string) => void };
@@ -28,15 +30,9 @@ export default function IntercessionStep({ onComplete }: { onComplete: () => voi
         </View>
     );
 }
-const { width, height } = Dimensions.get('window');
 
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-// native: 18
-// mobile web: 14
-// desktop web: 20
-const fontSize = !isWeb ? 18 : isMobileWeb ? 14 : 20;
+const viewport: ViewportSpec = getViewportSpec();
+const fontSize = !viewport.isWeb ? 18 : viewport.isMobileWeb ? 14 : 20;
 
 const styles = StyleSheet.create({
     container: {
@@ -44,7 +40,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingTop: SPACING.xl,
     },
-
 
     text: {
         fontSize: fontSize,

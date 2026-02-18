@@ -1,5 +1,8 @@
 import { useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, Animated, Easing, Pressable, Platform, Dimensions } from "react-native";
+import { View, StyleSheet, Animated, Easing, Pressable } from "react-native";
+
+import { ViewportSpec, getViewportSpec } from '../utilities/screen';
+
 
 type Props = {
   onPress?: () => void;
@@ -53,15 +56,12 @@ export default function Halo({ onPress, children }: Props) {
   );
 }
 
-const { width, height } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const HALO_SIZE = isMobileWeb
-  ? width * 0.90       // mobile web
-  : isWeb
-    ? width * 0.3       // desktop web
+const HALO_SIZE = viewport.isMobileWeb
+  ? viewport.width * 0.90       // mobile web
+  : viewport.isWeb
+    ? viewport.width * 0.3       // desktop web
     : 400;              // native
 
 const styles = StyleSheet.create({

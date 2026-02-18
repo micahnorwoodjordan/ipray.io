@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, TextInput, StyleSheet, Animated, Text, Platform, Dimensions } from 'react-native';
+import { View, TextInput, StyleSheet, Animated, Text } from 'react-native';
+
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 import WarningModal from '../modals/WarningModal';
@@ -73,13 +75,9 @@ export default function PrayerStep({ value, onChange, onNext, onBack }: Props) {
   );
 }
 
-const { height: windowHeight, width } = Dimensions.get('window');
-
-const isWeb = Platform.OS === 'web';
-const isMobileWeb = isWeb && width < 480;
-
-const TEXTINPUT_WIDTH = isMobileWeb ? width * 0.85 : isWeb ? width * 0.5 : 400;
-const TEXTINPUT_HEIGHT = isMobileWeb ? width * 0.5 : isWeb ? width * 0.2 : 200;
+const viewport: ViewportSpec = getViewportSpec();
+const TEXTINPUT_WIDTH = viewport.isMobileWeb ? viewport.width * 0.85 : viewport.isWeb ? viewport.width * 0.5 : 400;
+const TEXTINPUT_HEIGHT = viewport.isMobileWeb ? viewport.width * 0.5 : viewport.isWeb ? viewport.width * 0.2 : 200;
 
 const styles = StyleSheet.create({
   container: {
@@ -87,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    minHeight: Platform.OS === 'web' ? windowHeight : undefined,
+    minHeight: viewport.isWeb ? viewport.height : undefined,
     backgroundColor: 'transparent',
   },
   centerContent: {

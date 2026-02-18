@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Dimensions, Platform, Animated } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Animated } from 'react-native';
+
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 import WarningModal from '../modals/WarningModal';
@@ -82,7 +84,7 @@ export default function EmailStep({ value, onChange, onNext, onBack }: Props) {
     );
 }
 
-const { width } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
 const styles = StyleSheet.create({
     container: {
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: SPACING.lg,
-        minHeight: Platform.OS === 'web' ? 600 : undefined,
+        minHeight: viewport.isWeb ? 600 : undefined,
         backgroundColor: 'transparent',
     },
     centerContent: {
@@ -111,9 +113,9 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.75)',
     },
     input: {
-        width: Math.min(width - SPACING.xl * 2, 420),
+        width: Math.min(viewport.width - SPACING.xl * 2, 420),
         alignSelf: 'center',
-        paddingVertical: Platform.OS === 'web' ? SPACING.sm : SPACING.md,
+        paddingVertical: viewport.isWeb ? SPACING.sm : SPACING.md,
         paddingHorizontal: SPACING.md,
         borderRadius: 8,
         borderWidth: 1,
