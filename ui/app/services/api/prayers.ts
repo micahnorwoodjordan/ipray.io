@@ -1,9 +1,7 @@
 import { sendApiRequest } from './client';
 import { PrayerSubmissionRequest, PrayerSubmissionResponse, PrayerResponse } from './types';
 
-export async function submitPrayer(
-  payload: PrayerSubmissionRequest
-): Promise<PrayerSubmissionResponse> {
+export async function submitPrayer(payload: PrayerSubmissionRequest): Promise<PrayerSubmissionResponse> {
   return sendApiRequest<PrayerSubmissionResponse>('api/prayer/create', {
     method: 'POST',
     body: payload,

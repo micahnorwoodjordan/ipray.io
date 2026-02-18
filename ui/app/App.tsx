@@ -33,6 +33,7 @@ export default function App() {
   const [prayerText, setPrayerText] = useState('');
   const [email, setEmail] = useState('');
   const [permissionToShare, setPermissionToShare] = useState(false);
+  const [denomination] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -199,11 +200,12 @@ export default function App() {
                 setLoading(true);
 
                 try {
-                  let normalized = sanitizePrayerPayload({
+                  const normalized = sanitizePrayerPayload({
                     user_name: userName,
                     text: prayerText,
                     user_email: email,
                     is_public: permission,
+                    denomination,
                   });
                   await submitPrayer(normalized);
                   setStep('submitted');
@@ -262,7 +264,7 @@ export default function App() {
         message="there was an issue sending your prayer request...please try again in a bit"
       />
 
-      <LoadingModal visible={loading} message="saving your prayer..."/>
+      <LoadingModal visible={loading} message="saving your prayer..." />
     </View>
   );
 }
@@ -280,13 +282,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#111827',
   },
-
   topSection: {
     flex: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   bottomSection: {
     flex: 0.5,
     justifyContent: 'space-between',
@@ -294,38 +294,32 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     paddingHorizontal: 24,
   },
-
   content: {
     paddingHorizontal: 16,
     alignItems: 'center',
     width: '85%',
   },
-
   haloContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   beginText: {
     color: '#e5e7eb',
     fontSize: FONT_SIZE,
     letterSpacing: 8,
   },
-
   agreementRow: {
     marginTop: 24,
     flexDirection: 'row',
     alignItems: 'center',
     opacity: 0.65,
   },
-
   agreementText: {
     fontSize: 13,
     color: '#9ca3af',
     marginLeft: 6,
     letterSpacing: 1,
   },
-
   scripture: {
     fontSize: 13,
     lineHeight: 18,

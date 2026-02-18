@@ -3,6 +3,7 @@ export type PrayerSubmissionRequest = {
   text: string;
   is_public: boolean;
   user_email?: string;
+  denomination: string;
 };
 
 export type PrayerSubmissionResponse = {
