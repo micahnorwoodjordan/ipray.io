@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Pressable, Dimensions, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { useIdlePulse } from './animations/pulse';
@@ -41,7 +41,7 @@ export default function App() {
   const haloAnim = useRef(new Animated.Value(1)).current;
   const haloPulse = useIdlePulse(step === 'landing');
   const agreementFade = useRef(new Animated.Value(0)).current;
-  const agreementBreath = useBreath(step === 'landing', 3000, 1.1);
+  const agreementBreath = useBreath(step === 'landing', 1500, 1.1);
 
   const haloAnimatedStyle = useMemo(
     () => ({
@@ -150,13 +150,13 @@ export default function App() {
             <View style={styles.haloContainer}>
               <Animated.View style={haloAnimatedStyle}>
                 <Halo onPress={() => transitionToNextStep('name')}>
-                  <Text style={styles.beginText}>request prayer</Text>
+                  <Text style={styles.beginText}>request prayer 🙏🏽</Text>
                 </Halo>
               </Animated.View>
 
               <Pressable onPress={() => setShowAgreement(true)}>
                 <Animated.View style={[styles.agreementRow, agreementAnimatedStyle]}>
-                  <Text style={styles.agreementText}>stand in agreement with another 🙏🏽</Text>
+                  <Text style={styles.agreementText}>stand in agreement with another 🛡️</Text>
                 </Animated.View>
               </Pressable>
             </View>
@@ -264,6 +264,15 @@ export default function App() {
   );
 }
 
+const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
+const isMobileWeb = isWeb && width < 480;
+const FONT_SIZE = isMobileWeb
+  ? 23         // mobile web
+  : isWeb
+    ? 30       // desktop web
+    : 25;      // native
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -297,7 +306,7 @@ const styles = StyleSheet.create({
 
   beginText: {
     color: '#e5e7eb',
-    fontSize: 30,
+    fontSize: FONT_SIZE,
     letterSpacing: 8,
   },
 
