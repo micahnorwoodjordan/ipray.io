@@ -76,8 +76,9 @@ export default function AgreementModal({
             },
           ]}
         >
-          <Text style={styles.prayerText}>{prayerText}</Text>
-
+          <Text style={styles.prayerText}>“{prayerText}”
+            <Text style={styles.prayerSecondaryText}> - another soul</Text>
+          </Text>
           <Pressable onPress={handleClose}>
             <Text style={styles.closeText}>back</Text>
           </Pressable>
@@ -108,6 +109,14 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
 
+  prayerSecondaryText: {
+    fontSize: 15,
+    lineHeight: 28,
+    color: '#e5e7eb',
+    textAlign: 'center',
+    marginBottom: 32,
+    opacity: 0.3
+  },
   closeText: {
     fontSize: 14,
     color: '#9ca3af',
