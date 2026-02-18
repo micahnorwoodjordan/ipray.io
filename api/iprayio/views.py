@@ -1,3 +1,4 @@
+import random
 import hashlib
 from datetime import timedelta
 
@@ -40,6 +41,31 @@ def is_rate_limited(ip_address: str, content_hash: str):
 @permission_classes([AllowAny])
 def ping(request):
     return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def get_prayer_request(request):
+    pk = request.query_params.get("id")
+
+    try:
+        if pk:
+            try:
+                prayer = Prayer.objects.get(pk=pk)
+            except Prayer.DoesNotExist:
+                return Response({"detail": "Prayer not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            prayers = list(Prayer.objects.filter(is_public=True, is_approved=True))
+            ids = [p.id for p in prayers]
+            idx = random.randint(0, len(ids) - 1)
+            prayer = prayers[idx]
+        return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(e)
+        return Response({"detail": "Unable to retrieve prayer."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
