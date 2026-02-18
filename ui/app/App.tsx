@@ -23,6 +23,8 @@ import { submitPrayer, fetchPrayer } from './services/api/prayers';
 import { PrayerResponse } from './services/api/types';
 import { ViewportSpec, getViewportSpec } from './utilities/screen';
 
+import { sanitizePrayerPayload } from './utilities/normalize';
+
 type Step = 'landing' | 'name' | 'prayer' | 'email' | 'consent' | 'submitted' | 'intercession';
 
 export default function App() {
@@ -197,13 +199,13 @@ export default function App() {
                 setLoading(true);
 
                 try {
-                  await submitPrayer({
+                  let normalized = sanitizePrayerPayload({
                     user_name: userName,
                     text: prayerText,
                     user_email: email,
                     is_public: permission,
                   });
-
+                  await submitPrayer(normalized);
                   setStep('submitted');
                 } catch {
                   setShowError(true);
