@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Animated, Text, Platform, Dimensions } from 'react-native';
+import { View, TextInput, StyleSheet, Animated, Text } from 'react-native';
+
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 
@@ -52,7 +54,7 @@ export default function NameStep({ value, onChange, onNext, onBack }: Props) {
   );
 }
 
-const { height: windowHeight } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
 const styles = StyleSheet.create({
   container: {
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    minHeight: Platform.OS === 'web' ? windowHeight : undefined,
+    minHeight: viewport.isWeb ? viewport.height : undefined,
     backgroundColor: 'transparent',
   },
   centerContent: {

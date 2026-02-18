@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
+import { ViewportSpec, getViewportSpec } from '../../utilities/screen';
 import { SPACING } from '../../themes/spacing';
 import { useSwipe } from '../../hooks/swipe';
 import SoftButton from '../SoftButton';
@@ -57,16 +58,16 @@ export default function ConsentStep({ onDecide, onBack }: Props) {
   );
 }
 
-const { height } = Dimensions.get('window');
+const viewport: ViewportSpec = getViewportSpec();
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: SPACING.xl,
-    paddingTop: height * 0.25,
+    paddingTop: viewport.height * 0.25,
     justifyContent: 'space-between',
     backgroundColor: 'transparent',
-    minHeight: Platform.OS === 'web' ? height : undefined,
+    minHeight: viewport.isWeb ? viewport.height : undefined,
   },
 
   content: {
