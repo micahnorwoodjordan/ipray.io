@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 
 
 from iprayio.models import Prayer
+from iprayio.exceptions import SuspiciousSubmissionException
 from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer
 
 
@@ -74,35 +75,39 @@ def get_prayer_request(request):
 @permission_classes([AllowAny])
 def create_prayer_request(request):
     serializer = PrayerCreateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
 
-    ip_address = get_client_ip(request)
-    text = serializer.validated_data["text"]
-    is_public = serializer.validated_data["is_public"]
-    user_name = serializer.validated_data.get("user_name") or "Anonymous"
-    user_email = serializer.validated_data.get("user_email")
+    try:
+        serializer.is_valid(raise_exception=True)
+        ip_address = get_client_ip(request)
+        text = serializer.validated_data["text"]
+        is_public = serializer.validated_data["is_public"]
+        user_name = serializer.validated_data.get("user_name") or "Anonymous"
+        user_email = serializer.validated_data.get("user_email")
 
-    # Normalize whitespace before hashing
-    normalized_text = " ".join(text.split())
-    content_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
+        # Normalize whitespace before hashing
+        normalized_text = " ".join(text.split())
+        content_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
 
-    if is_rate_limited(ip_address, content_hash):
-        return Response(
-            {"detail": "Please wait before submitting another prayer."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
+        if is_rate_limited(ip_address, content_hash):
+            return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        prayer = Prayer.objects.create(
+            text=text,
+            content_hash=content_hash,
+            user_ip_address=ip_address,
+            next_allowed_at=now() + timedelta(minutes=settings.RATE_LIMIT_MINUTES),
+            user_name=user_name,
+            user_email=user_email,
+            is_public=is_public
         )
 
-    prayer = Prayer.objects.create(
-        text=text,
-        content_hash=content_hash,
-        user_ip_address=ip_address,
-        next_allowed_at=now() + timedelta(minutes=settings.RATE_LIMIT_MINUTES),
-        user_name=user_name,
-        user_email=user_email,
-        is_public=is_public
-    )
+        return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
-    return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
+    except SuspiciousSubmissionException as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        return Response({"detail": "there was an unexpected server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["PUT"])

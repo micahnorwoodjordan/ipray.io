@@ -1,14 +1,18 @@
 import unicodedata
 
+from django.utils.timezone import now
+
 from rest_framework import serializers
-from .models import Prayer
+from iprayio.models import Prayer
+from iprayio.exceptions import SuspiciousSubmissionException
 
 
 class PrayerCreateSerializer(serializers.ModelSerializer):
+    denomination = serializers.CharField(required=True, allow_blank=True, trim_whitespace=False)
 
     class Meta:
         model = Prayer
-        fields = ["text", "user_name", "is_public", "user_email"]
+        fields = ["text", "user_name", "is_public", "user_email", "denomination"]
         extra_kwargs = {
             "text": {
                 "required": True,
@@ -26,8 +30,21 @@ class PrayerCreateSerializer(serializers.ModelSerializer):
             "user_email": {
                 "required": False,
                 "allow_blank": True,
-            },
+            }
         }
+
+    def validate(self, attrs):
+        denomination = attrs.get("denomination", "")
+
+        if denomination != "":
+            print(f'honeypot triggered; potential bot: {now()}')
+            raise SuspiciousSubmissionException("Invalid prayer request")
+
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop("denomination", None)
+        return super().create(validated_data)
 
     @staticmethod
     def normalize(value: str) -> str:
@@ -52,7 +69,7 @@ class PrayerCreateSerializer(serializers.ModelSerializer):
 
             value = data[field_name]
 
-            if isinstance(field, serializers.CharField) and isinstance(value, str):
+            if isinstance(field, serializers.CharField) and field_name != "denomination" and isinstance(value, str):
                 data[field_name] = self.normalize(value)
 
         return super().to_internal_value(data)

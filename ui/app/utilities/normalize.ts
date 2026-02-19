@@ -12,12 +12,13 @@ export function normalizeText(value: string): string {
     .replace(/\u0000/g, "");        // no null bytes
 }
 
-export function sanitizePrayerPayload(payload: PrayerSubmissionRequest) {
+export function sanitizePrayerPayload(payload: PrayerSubmissionRequest): PrayerSubmissionRequest  {
   const normalized = {
     user_name: payload.user_name ? normalizeText(payload.user_name) : "",
     text: normalizeText(payload.text),
     user_email: payload.user_email ? normalizeText(payload.user_email) : "",
     is_public: payload.is_public,
+    denomination: payload.denomination
   };
 
   if (!normalized.text || normalized.text.length === 0) {

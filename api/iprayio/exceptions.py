@@ -1,0 +1,2 @@
+class SuspiciousSubmissionException(Exception):
+    pass
