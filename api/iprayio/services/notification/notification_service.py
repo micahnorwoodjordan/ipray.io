@@ -27,10 +27,11 @@ class NotificationService:
         self._mailgun_from = settings.MAILGUN_FROM
         self._admin_notification_email = settings.ADMIN_NOTIFICATION_EMAIL
 
-    def notify_admin(self, methods: list[NotificationMethod], prayer: Prayer) -> NotificationSummary:
+    def notify_admin(self, methods: list[NotificationMethod], prayer_id: int) -> NotificationSummary:
+        prayer = Prayer.objects.get(id=prayer_id)
         summary = NotificationSummary(False, False, None, None)
 
-        if NotificationMethod.EMAIL in methods:
+        if NotificationMethod.EMAIL.name in methods:
             try:
                 send_admin_prayer_submission_notification(prayer)
                 summary.email_sent = True
@@ -39,7 +40,7 @@ class NotificationService:
                 print(f'failed to send email: {e}')
                 summary.email_error = str(e)
 
-        if NotificationMethod.SMS in methods:
+        if NotificationMethod.SMS.name in methods:
             try:
                 # send_prayer_notification_sms(prayer)  # TODO: recent A2P regulations make simple SMS rigorous to get off the ground
                 summary.sms_sent = False  # TODO: flip once SMS is figured out

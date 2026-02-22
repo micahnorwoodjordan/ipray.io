@@ -102,7 +102,7 @@ def create_prayer_request(request):
             is_public=is_public
         )
 
-        QueueService().publish_prayer_request_email_event(prayer)
+        QueueService().publish_prayer_request_notification_event(prayer)
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
     except SuspiciousSubmissionException as e:
