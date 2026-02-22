@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.utils.timezone import now
 
 from iprayio.models import Prayer
-from iprayio.services.notification.mailgun.mailgun_service import send_user_prayer_completed_notification
+from iprayio.services.queue.queue_service import QueueService, NotificationEvent
+from iprayio.services.notification.notification_service import NotificationMethod
 
 
 @admin.register(Prayer)
@@ -52,7 +53,7 @@ class PrayerAdmin(admin.ModelAdmin):
             prayer.save(update_fields=["prayer_status", "fulfilled_at"])
 
             if prayer.user_email:
-                send_user_prayer_completed_notification(prayer)
+                QueueService().publish_prayer_request_notification_event(prayer, [NotificationMethod.EMAIL.value], NotificationEvent.PRAYER_REQUEST_COMPLETION_EVENT.value)
 
         self.message_user(request, "Selected prayers marked as completed and users notified.")
 

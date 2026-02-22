@@ -15,8 +15,9 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 
 from iprayio.models import Prayer
 from iprayio.exceptions import SuspiciousSubmissionException
-from iprayio.services.queue.queue_service import QueueService
+from iprayio.services.queue.queue_service import QueueService, NotificationEvent
 from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer
+from iprayio.services.notification.notification_service import NotificationMethod
 
 
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
@@ -102,7 +103,11 @@ def create_prayer_request(request):
             is_public=is_public
         )
 
-        QueueService().publish_prayer_request_notification_event(prayer)
+        QueueService().publish_prayer_request_notification_event(
+            prayer,
+            [NotificationMethod.EMAIL.value],
+            NotificationEvent.PRAYER_REQUEST_CREATION_EVENT.value
+        )
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
     except SuspiciousSubmissionException as e:

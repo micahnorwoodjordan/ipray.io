@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from iprayio.models import Prayer
-from iprayio.services.notification.mailgun.mailgun_service import send_admin_prayer_submission_notification
+from iprayio.services.notification.mailgun.mailgun_service import send_admin_prayer_submission_notification, send_user_prayer_completed_notification
 
 
 WORKER_ID = socket.gethostname()
@@ -37,7 +37,7 @@ class NotificationService:
         prayer = Prayer.objects.get(id=prayer_id)
         summary = NotificationSummary(False, False, None, None, prayer)
 
-        if NotificationMethod.EMAIL.name in methods:
+        if NotificationMethod.EMAIL.value in methods:
             try:
                 send_admin_prayer_submission_notification(prayer)
                 summary.email_sent = True
@@ -46,7 +46,7 @@ class NotificationService:
                 print(f'failed to send email: {e}')
                 summary.email_error = str(e)
 
-        if NotificationMethod.SMS.name in methods:
+        if NotificationMethod.SMS.value in methods:
             try:
                 # send_prayer_notification_sms(prayer)  # TODO: recent A2P regulations make simple SMS rigorous to get off the ground
                 summary.sms_sent = False  # TODO: flip once SMS is figured out
@@ -56,6 +56,16 @@ class NotificationService:
                 summary.sms_error = str(e)
 
         return summary
+
+    def notify_user(self, prayer_id: int) -> None:
+        prayer = Prayer.objects.get(id=prayer_id)
+
+        if prayer.user_email is not None:
+            try:
+                send_user_prayer_completed_notification(prayer)
+                print(f'notified user by email for prayer {prayer.id}')
+            except Exception as e:
+                print(f'failed to notify user by email: {e}')
 
     @staticmethod
     def update_prayer_status(summary):
