@@ -1,10 +1,15 @@
+import socket
 from enum import Enum
 from dataclasses import dataclass
 
 from django.conf import settings
+from django.utils import timezone
 
 from iprayio.models import Prayer
 from iprayio.services.notification.mailgun.mailgun_service import send_admin_prayer_submission_notification
+
+
+WORKER_ID = socket.gethostname()
 
 
 class NotificationMethod(Enum):
@@ -18,6 +23,7 @@ class NotificationSummary:
     sms_sent: bool
     email_error: str
     sms_error: str
+    prayer: Prayer
 
 
 class NotificationService:
@@ -29,7 +35,7 @@ class NotificationService:
 
     def notify_admin(self, methods: list[NotificationMethod], prayer_id: int) -> NotificationSummary:
         prayer = Prayer.objects.get(id=prayer_id)
-        summary = NotificationSummary(False, False, None, None)
+        summary = NotificationSummary(False, False, None, None, prayer)
 
         if NotificationMethod.EMAIL.name in methods:
             try:
@@ -50,3 +56,16 @@ class NotificationService:
                 summary.sms_error = str(e)
 
         return summary
+
+    @staticmethod
+    def update_prayer_status(summary):
+        prayer = summary.prayer
+        prayer.prayer_status = Prayer.Status.RECEIVED
+        prayer.processing_started_at = timezone.now()
+        prayer.processing_by = WORKER_ID
+        prayer.attempt_count += 1
+        prayer.email_sent = summary.email_sent
+        prayer.email_error = summary.email_error
+        prayer.sms_sent = summary.sms_sent
+        prayer.sms_error = summary.sms_error
+        prayer.save()

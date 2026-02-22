@@ -23,7 +23,8 @@ class QueueService:
             payload = json.loads(body.decode('utf-8'))
             prayer_id = payload['id']
             methods = payload['methods']
-            self._notification_service.notify_admin(methods, prayer_id)
+            summary = self._notification_service.notify_admin(methods, prayer_id)
+            NotificationService.update_prayer_status(summary)
 
         self._client.consume(consume_prayer_request_notification_event)
 
