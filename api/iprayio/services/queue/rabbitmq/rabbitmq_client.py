@@ -1,25 +1,33 @@
 import os
 import signal
 import sys
+import json
 import pika
+
+from iprayio.models import Prayer
+from iprayio.services.notification.notification_service import NotificationService
 
 
 class RabbitMQClient:
-    def __init__(self, queue_url=None, queue_name=None, exchange=None, exchange_type="direct"):
+    def __init__(self, queue_url=None, queue_name=None, exchange=None, exchange_type="direct", is_consumer=False):
         self._queue_url = queue_url or os.environ["QUEUE_URL"]
         self._queue_name = queue_name or os.environ["QUEUE_NAME"]
-        self._exchange = exchange or os.environ["QUEUE_EXCHANGE"]
+        # using default exchange
+        # self._exchange = exchange or os.environ["QUEUE_EXCHANGE"]
+        self._exchange = ''
         self._exchange_type = exchange_type
         self._connection = self._create_connection()
         self._channel = self._connection.channel()
-        self._channel.exchange_declare(exchange=self._exchange, exchange_type=self._exchange_type, durable=True)
+        self._channel.confirm_delivery()
+        # self._channel.exchange_declare(exchange=self._exchange, exchange_type=self._exchange_type, durable=True)
         self._channel.queue_declare(queue=self._queue_name, durable=True)
-        self._channel.queue_bind(exchange=self._exchange, queue=self._queue_name)
+        # self._channel.queue_bind(exchange=self._exchange, queue=self._queue_name, routing_key=self._queue_name)
         self._channel.basic_qos(prefetch_count=1)  # implement natural load balancing (not relevant now since there will only be one instance)
+        self._channel.add_on_return_callback(self._on_return)
 
-        # graceful shutdown handling
-        signal.signal(signal.SIGINT, self._graceful_shutdown)
-        signal.signal(signal.SIGTERM, self._graceful_shutdown)
+        if is_consumer:  # graceful shutdown handling
+            signal.signal(signal.SIGINT, self._graceful_shutdown)
+            signal.signal(signal.SIGTERM, self._graceful_shutdown)
 
     def _create_connection(self) -> pika.BlockingConnection:
         params = pika.URLParameters(self._queue_url)
@@ -27,9 +35,13 @@ class RabbitMQClient:
         params.heartbeat = 60
         return pika.BlockingConnection(params)
 
-    def publish(self, message: str) -> None:
+    def _on_return(self, ch, method, properties, body):
+        raise RuntimeError("Message was returned as unroutable")
+
+    def publish(self, payload: dict) -> None:
+        encoded = json.dumps(payload).encode('utf-8')
         props = pika.BasicProperties(delivery_mode=2)  # persist message to mq disk
-        self._channel.basic_publish(exchange=self._exchange, routing_key=None, body=message, properties=props)
+        self._channel.basic_publish(exchange=self._exchange, routing_key=self._queue_name, body=encoded, properties=props, mandatory=True)
         print("Message published.")
 
     def consume(self, callback):
@@ -53,5 +65,7 @@ class RabbitMQClient:
 
     def _graceful_shutdown(self, signum, frame):
         print("Shutting down gracefully...")
+        if self._channel.is_open:
+            self._channel.stop_consuming()
         self.close()
         sys.exit(0)

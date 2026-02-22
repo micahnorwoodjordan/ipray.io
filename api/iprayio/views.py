@@ -15,6 +15,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 
 from iprayio.models import Prayer
 from iprayio.exceptions import SuspiciousSubmissionException
+from iprayio.services.queue.queue_service import QueueService
 from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer
 
 
@@ -101,6 +102,7 @@ def create_prayer_request(request):
             is_public=is_public
         )
 
+        QueueService().publish_prayer_request_email_event(prayer)
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
     except SuspiciousSubmissionException as e:
