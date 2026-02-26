@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 
 from iprayio.models import Prayer
 from iprayio.utilities import logging_utilities
+from iprayio.utilities import request_utilities
 from iprayio.exceptions import SuspiciousSubmissionException
 from iprayio.services.prayer.prayer_service import PrayerService, PrayerServiceRateLimitException
 from iprayio.services.queue.queue_service import QueueService, NotificationEvent
@@ -28,14 +29,6 @@ PRAYER_REQUEST_CREATE_4XX_ERROR_MSG = 'an error occurred saving Prayer'
 PRAYER_REQUEST_CREATE_5XX_ERROR_MSG = 'an unknown error occurred saving Prayer'
 
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
-
-
-def get_client_ip(request):
-    xff = request.META.get("HTTP_X_FORWARDED_FOR")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR")
-
 
 
 @api_view(["GET"])
@@ -79,7 +72,7 @@ def create_prayer_request(request):
 
     try:
         serializer.is_valid(raise_exception=True)
-        ip_address = get_client_ip(request)
+        ip_address = request_utilities.get_client_ip(request)
         text = serializer.validated_data["text"]
         is_public = serializer.validated_data["is_public"]
         user_name = serializer.validated_data.get("user_name") or "Anonymous"
@@ -109,7 +102,7 @@ def create_prayer_request(request):
 
 @api_view(["PUT"])
 def complete_prayer_request(request, pk):
-    client_ip = get_client_ip(request)
+    client_ip = request_utilities.get_client_ip(request)
 
     if client_ip not in ADMIN_WHITELISTED_IPS:
         return HttpResponseForbidden("IP not allowed")
