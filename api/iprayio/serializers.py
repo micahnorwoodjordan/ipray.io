@@ -4,7 +4,7 @@ from django.utils.timezone import now
 
 from rest_framework import serializers
 from iprayio.models import Prayer
-from iprayio.exceptions import SuspiciousSubmissionException
+from iprayio.services.prayer.prayer_service import SuspiciousSubmissionException
 
 
 class PrayerCreateSerializer(serializers.ModelSerializer):
@@ -76,6 +76,7 @@ class PrayerCreateSerializer(serializers.ModelSerializer):
 
 
 class PrayerDetailSerializer(serializers.ModelSerializer):
+    """prayer request details pertinent to client-side computation, such as dynamic, time-based error messages"""
     class Meta:
         model = Prayer
         fields = [
@@ -83,4 +84,12 @@ class PrayerDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "next_allowed_at",
         ]
+        read_only_fields = fields
+
+
+class PrayerAgreementSerializer(serializers.ModelSerializer):
+    """specific to the 'stand in agreement' UI functionality. API should only expose the prayer text in this case"""
+    class Meta:
+        model = Prayer
+        fields = ["text"]
         read_only_fields = fields

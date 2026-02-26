@@ -5,6 +5,7 @@ from django.utils.timezone import now
 from django.conf import settings
 from django.http import HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,18 +16,19 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from iprayio.models import Prayer
 from iprayio.utilities import logging_utilities
 from iprayio.utilities import request_utilities
-from iprayio.exceptions import SuspiciousSubmissionException
-from iprayio.services.prayer.prayer_service import PrayerService, PrayerServiceRateLimitException
+from iprayio.services.prayer.prayer_service import PrayerService, PrayerServiceRateLimitException, SuspiciousSubmissionException
 from iprayio.services.queue.queue_service import QueueService, NotificationEvent
-from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer
+from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer, PrayerAgreementSerializer
 from iprayio.services.notification.notification_service import NotificationMethod
 
 
 logger = logging.getLogger(__name__)
 
 
-PRAYER_REQUEST_CREATE_4XX_ERROR_MSG = 'an error occurred saving Prayer'
-PRAYER_REQUEST_CREATE_5XX_ERROR_MSG = 'an unknown error occurred saving Prayer'
+PRAYER_REQUEST_CREATE_4XX_ERROR_MSG = 'an error occurred saving prayer'
+PRAYER_REQUEST_CREATE_5XX_ERROR_MSG = 'an unknown error occurred saving prayer'
+
+PRAYER_REQUEST_READ_5XX_ERROR_MSG = 'could not fetch prayer'
 
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
 
@@ -43,24 +45,24 @@ def ping(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def get_prayer_request(request):
-    pk = request.query_params.get("id")
+    prayer_id = request.query_params.get("id")
+    service = PrayerService()
 
     try:
-        if pk:
-            try:
-                prayer = Prayer.objects.get(pk=pk)
-            except Prayer.DoesNotExist:
-                return Response({"detail": "Prayer not found."}, status=status.HTTP_404_NOT_FOUND)
+        if prayer_id:
+            prayer = service.get_prayer_request(prayer_id)
         else:
-            prayers = list(Prayer.objects.filter(is_public=True, is_approved=True))
-            ids = [p.id for p in prayers]
-            idx = random.randint(0, len(ids) - 1)
-            prayer = prayers[idx]
-        return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_200_OK)
+            prayer = service.get_random_prayer_request()
+
+        return Response(PrayerAgreementSerializer(prayer).data, status=status.HTTP_200_OK)
+
+    except ObjectDoesNotExist as e:
+        logging_utilities.log_typed_error(logger, e, 'Prayer object does not exist')
+        return Response({"detail": PRAYER_REQUEST_READ_5XX_ERROR_MSG}, status=status.HTTP_404_NOT_FOUND)
 
     except Exception as e:
-        print(e)
-        return Response({"detail": "Unable to retrieve prayer."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logging_utilities.log_typed_error(logger, e, 'error occurred fetching Prayer object')
+        return Response({"detail": PRAYER_REQUEST_READ_5XX_ERROR_MSG}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
@@ -75,7 +77,7 @@ def create_prayer_request(request):
         ip_address = request_utilities.get_client_ip(request)
         text = serializer.validated_data["text"]
         is_public = serializer.validated_data["is_public"]
-        user_name = serializer.validated_data.get("user_name") or "Anonymous"
+        user_name = serializer.validated_data.get("user_name")
         user_email = serializer.validated_data.get("user_email")
 
         prayer = PrayerService.create_new_prayer_request(text, ip_address, user_name, user_email, is_public)

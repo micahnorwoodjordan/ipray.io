@@ -1,11 +1,14 @@
+import random
 import logging
 import hashlib
 from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now
+from django.core.exceptions import ObjectDoesNotExist
 
 from iprayio.models import Prayer
+from iprayio.utilities import logging_utilities
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +19,10 @@ class PrayerServiceException(Exception):
 
 
 class PrayerServiceRateLimitException(PrayerServiceException):
+    pass
+
+
+class SuspiciousSubmissionException(PrayerServiceException):
     pass
 
 
@@ -64,3 +71,20 @@ class PrayerService:
 
         logger.info('new Prayer object created', extra=PrayerService.to_dict(prayer))
         return prayer
+
+    def get_prayer_request(self, prayer_id):
+        try:
+            return Prayer.objects.get(id=prayer_id)
+        except ObjectDoesNotExist as e:
+            logging_utilities.log_typed_error(logger, e, 'Prayer object does not exist')
+
+    # for the "stand in agreement" feature
+    def get_random_prayer_request(self):
+        """fetch a shareable prayer at random, taking into account possible non-sequential id's in the target table"""
+        try:
+            prayers = list(Prayer.objects.filter(is_public=True, is_approved=True))
+            ids = [p.id for p in prayers]
+            idx = random.randint(0, len(ids) - 1)
+            return prayers[idx]
+        except ObjectDoesNotExist as e:
+            logging_utilities.log_typed_error(logger, e, 'Prayer object does not exist')
