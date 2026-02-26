@@ -95,7 +95,7 @@ LOGGING = {
             "propagate": True,
         },
         "django.server": {  # only warnings from django requests
-            "level": "WARNING",
+            "level": "ERROR",
             "propagate": True,
         },
         "iprayio": {

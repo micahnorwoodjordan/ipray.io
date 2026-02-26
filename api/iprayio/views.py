@@ -1,6 +1,5 @@
 import random
-import hashlib
-from datetime import timedelta
+import logging
 
 from django.utils.timezone import now
 from django.conf import settings
@@ -14,11 +13,19 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 
 
 from iprayio.models import Prayer
+from iprayio.utilities import logging_utilities
 from iprayio.exceptions import SuspiciousSubmissionException
+from iprayio.services.prayer.prayer_service import PrayerService, PrayerServiceRateLimitException
 from iprayio.services.queue.queue_service import QueueService, NotificationEvent
 from iprayio.serializers import PrayerCreateSerializer, PrayerDetailSerializer
 from iprayio.services.notification.notification_service import NotificationMethod
 
+
+logger = logging.getLogger(__name__)
+
+
+PRAYER_REQUEST_CREATE_4XX_ERROR_MSG = 'an error occurred saving Prayer'
+PRAYER_REQUEST_CREATE_5XX_ERROR_MSG = 'an unknown error occurred saving Prayer'
 
 ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
 
@@ -29,14 +36,6 @@ def get_client_ip(request):
         return xff.split(",")[0].strip()
     return request.META.get("REMOTE_ADDR")
 
-
-def is_rate_limited(ip_address: str, content_hash: str):
-    qs = Prayer.objects.filter(user_ip_address=ip_address, content_hash=content_hash)
-    latest = qs.order_by("-created_at").first()
-
-    if not latest:
-        return False
-    return now() < latest.next_allowed_at
 
 
 @api_view(["GET"])
@@ -86,22 +85,7 @@ def create_prayer_request(request):
         user_name = serializer.validated_data.get("user_name") or "Anonymous"
         user_email = serializer.validated_data.get("user_email")
 
-        # Normalize whitespace before hashing
-        normalized_text = " ".join(text.split())
-        content_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
-
-        if is_rate_limited(ip_address, content_hash):
-            return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-
-        prayer = Prayer.objects.create(
-            text=text,
-            content_hash=content_hash,
-            user_ip_address=ip_address,
-            next_allowed_at=now() + timedelta(minutes=settings.RATE_LIMIT_MINUTES),
-            user_name=user_name,
-            user_email=user_email,
-            is_public=is_public
-        )
+        prayer = PrayerService.create_new_prayer_request(text, ip_address, user_name, user_email, is_public)
 
         QueueService().publish_prayer_request_notification_event(
             prayer,
@@ -110,10 +94,16 @@ def create_prayer_request(request):
         )
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
+    except PrayerServiceRateLimitException as e:
+        logging_utilities.log_typed_error(logger, e, PRAYER_REQUEST_CREATE_4XX_ERROR_MSG)
+        return Response({"detail": "Please wait before submitting another prayer."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
     except SuspiciousSubmissionException as e:
+        logging_utilities.log_typed_error(logger, e, PRAYER_REQUEST_CREATE_4XX_ERROR_MSG)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
-        print(e)
+        logging_utilities.log_typed_error(logger, e, PRAYER_REQUEST_CREATE_5XX_ERROR_MSG)
         return Response({"detail": "there was an unexpected server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
