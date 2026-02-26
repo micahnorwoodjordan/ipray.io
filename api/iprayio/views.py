@@ -26,8 +26,6 @@ PRAYER_REQUEST_CREATE_5XX_ERROR_MSG = 'an unknown error occurred saving prayer'
 
 PRAYER_REQUEST_READ_5XX_ERROR_MSG = 'could not fetch prayer'
 
-ADMIN_WHITELISTED_IPS = getattr(settings, "ADMIN_WHITELISTED_IPS", ["127.0.0.1"])
-
 
 @api_view(["GET"])
 @authentication_classes([])
