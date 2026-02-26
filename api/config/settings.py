@@ -63,6 +63,48 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+#NOTE: log pattern is to simply write to the stdout
+# these logs will automatically be shipped to Better Stack by App Platform
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "fmt": "%(levelname)s %(name)s %(message)s",  # Better Stack parses JSON automatically
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        },
+    },
+
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+
+    "loggers": {
+        "pika": {  # only warnings from pika
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "django.server": {  # only warnings from django requests
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "iprayio": {
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
