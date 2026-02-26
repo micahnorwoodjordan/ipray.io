@@ -1,9 +1,6 @@
-import random
 import logging
 
-from django.utils.timezone import now
 from django.conf import settings
-from django.http import HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -13,7 +10,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 
 
-from iprayio.models import Prayer
 from iprayio.utilities import logging_utilities
 from iprayio.utilities import request_utilities
 from iprayio.services.prayer.prayer_service import PrayerService, PrayerServiceRateLimitException, SuspiciousSubmissionException
@@ -100,21 +96,3 @@ def create_prayer_request(request):
     except Exception as e:
         logging_utilities.log_typed_error(logger, e, PRAYER_REQUEST_CREATE_5XX_ERROR_MSG)
         return Response({"detail": "there was an unexpected server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(["PUT"])
-def complete_prayer_request(request, pk):
-    client_ip = request_utilities.get_client_ip(request)
-
-    if client_ip not in ADMIN_WHITELISTED_IPS:
-        return HttpResponseForbidden("IP not allowed")
-
-    try:
-        prayer = Prayer.objects.get(pk=pk)
-    except Prayer.DoesNotExist:
-        return Response({"detail": "Prayer not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    prayer.fulfilled_at = now()
-    prayer.save(update_fields=["fulfilled_at"])
-
-    return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_200_OK)
