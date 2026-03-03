@@ -4,9 +4,15 @@ the Python SDK code would look almost identical to the below
 """
 
 import requests
+import logging
+
 from django.conf import settings
 
 from iprayio.models import Prayer
+from iprayio.utilities import logging_utilities
+
+
+logger = logging.getLogger(__name__)
 
 
 class MailgunServiceException(Exception):
@@ -40,7 +46,7 @@ class MailgunService:
             response = requests.post(self.url, auth=self._auth, data=data, timeout=10)
             response.raise_for_status()
         except Exception as e:
-            raise MailgunServiceException from e
+            logging_utilities.transform_and_log_exception(e, MailgunServiceException, logger, 'there was an unexpected MailGun client error', reraise=True)
 
     def send_admin_prayer_submission_notification(self, prayer: Prayer) -> None:
         subject = f"ipray.io - Prayer Request: {prayer.id}"
