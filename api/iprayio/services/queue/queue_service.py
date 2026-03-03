@@ -1,9 +1,18 @@
 import json
 import enum
+import logging
 
 from iprayio.models import Prayer
-from iprayio.services.queue.rabbitmq.rabbitmq_client import RabbitMQClient
+from iprayio.utilities import logging_utilities
+from iprayio.services.queue.rabbitmq.rabbitmq_client import RabbitMQClient, RabbitMQClientException
 from iprayio.services.notification.notification_service import NotificationService, NotificationMethod
+
+
+logger = logging.getLogger(__name__)
+
+
+class QueueServiceException(Exception):
+    pass
 
 
 class InvalidNotificationEventException(Exception):
@@ -26,7 +35,11 @@ class QueueService:
             'methods': notification_methods,
             'event_type': event_type
         }
-        self._client.publish(payload)
+
+        try:
+            self._client.publish(payload)
+        except RabbitMQClientException as e:
+            logging_utilities.log_typed_error(logger, e, f'an error occurred publishing prayer notification event: {str(e)}')
 
     def register_consumer(self):
         def handle_prayer_request_notification_event(body: bytes):

@@ -1,4 +1,5 @@
 import socket
+import logging
 from enum import Enum
 from dataclasses import dataclass
 
@@ -6,7 +7,15 @@ from django.conf import settings
 from django.utils import timezone
 
 from iprayio.models import Prayer
-from iprayio.services.notification.mailgun.mailgun_service import send_admin_prayer_submission_notification, send_user_prayer_completed_notification
+from iprayio.utilities import logging_utilities
+from iprayio.services.notification.mailgun.mailgun_service import MailgunService
+
+
+logger = logging.getLogger(__name__)
+
+
+class NotificationServiceException(Exception):
+    pass
 
 
 WORKER_ID = socket.gethostname()
@@ -32,40 +41,38 @@ class NotificationService:
         self._mailgun_api_key = settings.MAILGUN_API_KEY
         self._mailgun_from = settings.MAILGUN_FROM
         self._admin_notification_email = settings.ADMIN_NOTIFICATION_EMAIL
+        self._mailgun_service = MailgunService()
 
     def notify_admin(self, methods: list[NotificationMethod], prayer_id: int) -> NotificationSummary:
         prayer = Prayer.objects.get(id=prayer_id)
         summary = NotificationSummary(False, False, None, None, prayer)
 
-        if NotificationMethod.EMAIL.value in methods:
-            try:
-                send_admin_prayer_submission_notification(prayer)
+        try:
+            if NotificationMethod.EMAIL.value in methods:
+                self._mailgun_service.send_admin_prayer_submission_notification(prayer)
                 summary.email_sent = True
-                print(f'sent email for prayer {prayer.id}')
-            except Exception as e:
-                print(f'failed to send email: {e}')
-                summary.email_error = str(e)
 
-        if NotificationMethod.SMS.value in methods:
-            try:
+            if NotificationMethod.SMS.value in methods:
                 # send_prayer_notification_sms(prayer)  # TODO: recent A2P regulations make simple SMS rigorous to get off the ground
                 summary.sms_sent = False  # TODO: flip once SMS is figured out
-                print(f'sent sms for prayer {prayer.id}')
-            except Exception as e:
-                print(f'failed to send sms: {e}')
-                summary.sms_error = str(e)
+
+        except Exception as e:
+            logging_utilities.log_typed_error(logger, e, f'an error occurred while notifying admin of new prayer request: {prayer.id}')
+            summary.sms_error = str(e)
+            raise NotificationServiceException from e
 
         return summary
 
     def notify_user(self, prayer_id: int) -> None:
-        prayer = Prayer.objects.get(id=prayer_id)
+        try:
+            prayer = Prayer.objects.get(id=prayer_id)
 
-        if prayer.user_email is not None:
-            try:
-                send_user_prayer_completed_notification(prayer)
-                print(f'notified user by email for prayer {prayer.id}')
-            except Exception as e:
-                print(f'failed to notify user by email: {e}')
+            if prayer.user_email is not None:
+                self._mailgun_service.send_user_prayer_completed_notification(prayer)
+
+        except Exception as e:
+            logging_utilities.log_typed_error(logger, e, f'an error occurred while notifying user of prayer completion: {prayer.id}')
+            raise NotificationServiceException from e
 
     @staticmethod
     def update_prayer_status(summary):
