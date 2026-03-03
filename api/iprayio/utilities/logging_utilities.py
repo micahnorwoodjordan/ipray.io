@@ -1,3 +1,8 @@
+from functools import wraps
+from typing import Callable
+
+from django.http import HttpRequest, HttpResponse
+
 from logging import Logger
 
 
@@ -26,3 +31,30 @@ def transform_and_log_exception(
 
     if reraise:
         raise target_exception
+
+
+def logged_method_call(logger: Logger) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+            logger.info(
+                "INCOMING REQUEST",
+                extra={
+                    "method": request.method,
+                    "path": request.path,
+                }
+            )
+
+            response = func(request, *args, **kwargs)
+
+            logger.info(
+                "OUTGOING RESPONSE",
+                extra={
+                    "status_code": getattr(response, "status_code", None)
+                }
+            )
+
+            return response
+
+        return wrapper
+    return decorator

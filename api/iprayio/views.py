@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -30,6 +29,7 @@ PRAYER_REQUEST_READ_5XX_ERROR_MSG = 'could not fetch prayer'
 @api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@logging_utilities.logged_method_call(logger)
 def ping(request):
     return Response({"status": "ok"}, status=status.HTTP_200_OK)
 
@@ -38,6 +38,7 @@ def ping(request):
 @api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@logging_utilities.logged_method_call(logger)
 def get_prayer_request(request):
     prayer_id = request.query_params.get("id")
     service = PrayerService()
@@ -63,6 +64,7 @@ def get_prayer_request(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@logging_utilities.logged_method_call(logger)
 def create_prayer_request(request):
     serializer = PrayerCreateSerializer(data=request.data)
 
@@ -81,6 +83,7 @@ def create_prayer_request(request):
             [NotificationMethod.EMAIL.value],
             NotificationEvent.PRAYER_REQUEST_CREATION_EVENT.value
         )
+
         return Response(PrayerDetailSerializer(prayer).data, status=status.HTTP_201_CREATED)
 
     except PrayerServiceRateLimitException as e:
@@ -92,5 +95,5 @@ def create_prayer_request(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
-        logging_utilities.log_typed_error(logger, e, PRAYER_REQUEST_CREATE_5XX_ERROR_MSG)
+        logger.error(PRAYER_REQUEST_CREATE_5XX_ERROR_MSG)
         return Response({"detail": "there was an unexpected server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
