@@ -3,6 +3,7 @@ this isn't the most graceful looking client, but there is no graceful abstractio
 the Python SDK code would look almost identical to the below
 """
 
+import json
 import requests
 import logging
 
@@ -27,12 +28,21 @@ class MailgunService:
         self.sender = settings.MAILGUN_FROM
         self._auth = ('api', settings.MAILGUN_API_KEY)
         self.domain = settings.MAILGUN_DOMAIN
-        self.template_name = 'production' if IS_PRODUCTION else 'dev'
         self.admin_to_email = settings.ADMIN_NOTIFICATION_EMAIL
         self.url = 'https://api.mailgun.net/v3/' + self.domain + '/messages'
 
-    def _send_email(self, to: list[str], subject: str, text=None, **kwargs) -> None:
+        template_env_slug = 'prod' if IS_PRODUCTION else 'dev'
+        self.user_notify_template_name = template_env_slug + '-' + 'user-notify'
+        self.admin_notify_template_name = template_env_slug + '-' + 'admin-notify'
+
+    def _send_email(self, to: list[str], subject: str, text=None, tvars=None, **kwargs) -> None:
+        if tvars is None:
+            tvars = dict()
+
         data = {
+            **{
+                't:variables': json.dumps(tvars)
+            },
             **dict(kwargs),
             **{
                 "from": self.sender,
@@ -46,13 +56,16 @@ class MailgunService:
             response = requests.post(self.url, auth=self._auth, data=data, timeout=10)
             response.raise_for_status()
         except Exception as e:
-            logging_utilities.transform_and_log_exception(e, MailgunServiceException, logger, 'there was an unexpected MailGun client error', reraise=True)
+            logging_utilities.transform_and_log_exception(e, MailgunServiceException, logger, 'there was an unexpected Mailgun client error', reraise=True)
 
     def send_admin_prayer_submission_notification(self, prayer: Prayer) -> None:
         subject = f"ipray.io - Prayer Request: {prayer.id}"
-        text = prayer.text
-        self._send_email([self.admin_to_email], subject, text)
+        tvars = {
+            'name': prayer.user_name,
+            'prayer_content': prayer.text
+        }
+        self._send_email([self.admin_to_email], subject, tvars=tvars, template=self.admin_notify_template_name)
 
     def send_user_prayer_completed_notification(self, prayer: Prayer) -> None:
         subject = 'ipray.io - Hi friend, Your Prayer Request Has Been Lifted Up'
-        self._send_email([prayer.user_email], subject, template=self.template_name)
+        self._send_email([prayer.user_email], subject, template=self.user_notify_template_name)
