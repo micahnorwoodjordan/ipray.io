@@ -37,8 +37,12 @@ class PrayerCreateSerializer(serializers.ModelSerializer):
         denomination = attrs.get("denomination", "")
 
         if denomination != "":
-            print(f'honeypot triggered; potential bot: {now()}')
+            print(f'honeypot triggered; potential bot: {now()}')  # TODO: log this
             raise SuspiciousSubmissionException("Invalid prayer request")
+
+        user_name = attrs.get("user_name", "")
+        if user_name == '' or user_name is None:
+            attrs['user_name'] = 'Anonymous'
 
         return attrs
 
