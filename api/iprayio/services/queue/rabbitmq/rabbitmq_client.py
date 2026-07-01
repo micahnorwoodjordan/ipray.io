@@ -28,7 +28,7 @@ class RabbitMQClient:
             self._connection = self._create_connection()
             self._channel = self._connection.channel()
             self._channel.confirm_delivery()
-            self._channel.queue_declare(queue=self._queue_name, durable=True)
+            self._channel.queue_declare(queue=self._queue_name, durable=True, auto_delete=True)
             self._channel.basic_qos(prefetch_count=1)
             self._channel.add_on_return_callback(self._on_return)
         except Exception as e:

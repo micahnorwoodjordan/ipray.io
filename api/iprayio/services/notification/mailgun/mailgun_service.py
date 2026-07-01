@@ -20,6 +20,7 @@ class MailgunServiceException(Exception):
 
 
 IS_PRODUCTION = not settings.DEBUG
+TEMPLATE_NAME = 'prod-user-notify' if IS_PRODUCTION else 'dev-user-notify'
 
 
 class MailgunService:
@@ -27,7 +28,7 @@ class MailgunService:
         self.sender = settings.MAILGUN_FROM
         self._auth = ('api', settings.MAILGUN_API_KEY)
         self.domain = settings.MAILGUN_DOMAIN
-        self.template_name = 'production' if IS_PRODUCTION else 'dev'
+        self.template_name = TEMPLATE_NAME
         self.admin_to_email = settings.ADMIN_NOTIFICATION_EMAIL
         self.url = 'https://api.mailgun.net/v3/' + self.domain + '/messages'
 

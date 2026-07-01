@@ -4,7 +4,7 @@ import logging
 
 from iprayio.models import Prayer
 from iprayio.utilities import logging_utilities
-from iprayio.services.queue.rabbitmq.rabbitmq_client import RabbitMQClient, RabbitMQClientException
+from iprayio.services.queue.rabbitmq.rabbitmq_client import RabbitMQClient
 from iprayio.services.notification.notification_service import NotificationService, NotificationMethod
 
 
@@ -38,7 +38,7 @@ class QueueService:
 
         try:
             self._client.publish(payload)
-        except RabbitMQClientException as e:
+        except Exception as e:
             logging_utilities.log_typed_error(logger, e, f'an error occurred publishing prayer notification event: {str(e)}')
 
     def register_consumer(self):

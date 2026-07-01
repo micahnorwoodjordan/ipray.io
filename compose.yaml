@@ -6,7 +6,7 @@ services:
       context: api
       dockerfile: Dockerfile
     container_name: iprayio.worker
-    command: python api/manage.py work
+    command: python api/manage.py runconsumer
     volumes:
       - .:/app
     ports:
@@ -24,6 +24,8 @@ services:
       ADMIN_NOTIFICATION_EMAIL: ${ADMIN_NOTIFICATION_EMAIL}
       RATE_LIMIT_MINUTES: ${RATE_LIMIT_MINUTES}
       SITE_HOSTS: ${SITE_HOSTS}
+      QUEUE_URL: ${QUEUE_URL}
+      QUEUE_NAME: ${QUEUE_NAME}
     restart: unless-stopped
     depends_on:
       - api
